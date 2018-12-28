@@ -1,0 +1,17 @@
+syntax = "proto3";
+option java_package = "com.fishlikewater.schedule.common.entity";
+option java_outer_classname = "MessageProbuf";
+
+message Message{
+    int32 length = 1;
+    MessageType type = 2;
+    string body = 3;
+    string extend = 4;
+}
+
+enum MessageType{
+   CONNECTION = 0;
+   HEALTH = 1;
+   CLOSE = 2;
+   VALID = 3;
+}
