@@ -1,5 +1,18 @@
 # schedule
-
+<p align="center">
+    <a>
+        <img src="https://img.shields.io/badge/codecov-60%25-orange.svg" >
+    </a>
+    <a href="http://www.apache.org/licenses/LICENSE-2.0.html" target="_blank">
+        <img src="http://img.shields.io/:license-apache-brightgreen.svg" >
+    </a>
+    <a>
+        <img src="https://img.shields.io/badge/JDK-1.8+-green.svg" >
+    </a>
+    <a>
+        <img src="https://img.shields.io/badge/spring%20boot-2.0%2B-brightgreen.svg" >
+    </a>
+</p>
 #### 介绍
 轻量的分布式任务调度框架。
 
@@ -50,7 +63,7 @@ public class ScheduleServer1 implements ScheduleJob {
 > 客户端集群部署(未完善)
 
 1.启动调度中心
-```$xslt
+```$xml
 schedule.server.server-port=8081
 ```
 
