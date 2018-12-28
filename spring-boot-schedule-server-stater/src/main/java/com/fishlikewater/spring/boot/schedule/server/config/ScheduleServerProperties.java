@@ -18,4 +18,6 @@ public class ScheduleServerProperties {
     private int serverPort;
 
     private String serverAddress;
+
+    private boolean enabled;
 }
