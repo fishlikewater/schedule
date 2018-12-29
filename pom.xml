@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.fishlikewater</groupId>
+    <groupId>com.github.fishlikewater</groupId>
     <artifactId>schedule</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
@@ -17,7 +17,6 @@
     </modules>
 
     <name>schedule</name>
-    <url>http://www.example.com</url>
 
     <licenses>
         <license>
@@ -27,9 +26,9 @@
         </license>
     </licenses>
     <scm>
-        <url>https://gitee.com/fishlikewater/schedule</url>
-        <connection>https://gitee.com/fishlikewater/schedule.git</connection>
-        <developerConnection>https://gitee.com/fishlikewater</developerConnection>
+        <url>https://github.com/fishlikewater/schedule</url>
+        <connection>https://github.com/fishlikewater/schedule.git</connection>
+        <developerConnection>https://github.com/fishlikewater</developerConnection>
     </scm>
     <developers>
         <developer>
