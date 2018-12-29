@@ -23,7 +23,7 @@
 >业务端
 ```
 <dependency>
-     <groupId>com.fishlikewater</groupId>
+     <groupId>com.github.fishlikewater</groupId>
      <artifactId>spring-boot-schedule-client-stater</artifactId>
      <version>0.0.1-SNAPSHOT</version>
  </dependency>        
@@ -32,7 +32,7 @@
 > 调度中心
 ```
 <dependency>
-     <groupId>com.fishlikewater</groupId>
+     <groupId>com.github.fishlikewater</groupId>
      <artifactId>spring-boot-schedule-server-stater</artifactId>
      <version>0.0.1-SNAPSHOT</version>
  </dependency>        
