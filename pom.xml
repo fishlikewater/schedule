@@ -154,8 +154,8 @@
                        <configuration>
                            <additionalJOption>-Xdoclint:none</additionalJOption>
                            <encoding>${project.build.sourceEncoding}</encoding>
-                           <outputDirectory>${basedir}</outputDirectory>
-                           <reportOutputDirectory>${basedir}</reportOutputDirectory>
+                           <outputDirectory>${basedir}/target/javadoc</outputDirectory>
+                           <reportOutputDirectory>${basedir}/target/javadoc</reportOutputDirectory>
                        </configuration>
                     </plugin>
                     <plugin>
