@@ -25,7 +25,7 @@
 <dependency>
      <groupId>com.github.fishlikewater</groupId>
      <artifactId>spring-boot-schedule-client-stater</artifactId>
-     <version>0.0.1-SNAPSHOT</version>
+     <version>0.0.1.RELEASE</version>
  </dependency>        
    ```
   
@@ -34,7 +34,7 @@
 <dependency>
      <groupId>com.github.fishlikewater</groupId>
      <artifactId>spring-boot-schedule-server-stater</artifactId>
-     <version>0.0.1-SNAPSHOT</version>
+     <version>0.0.1.RELEASE</version>
  </dependency>        
    ```
 
