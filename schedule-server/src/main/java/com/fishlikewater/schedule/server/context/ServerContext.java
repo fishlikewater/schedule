@@ -2,11 +2,8 @@ package com.fishlikewater.schedule.server.context;
 
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import lombok.NonNull;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author zhangx
@@ -14,29 +11,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * @mail fishlikewater@126.com
  * @ClassName ServerContext
  * @Description
- * @date 2018年12月27日 17:36
+ * @date 2018年12月30日 15:35
  **/
-@Slf4j
-public class ServerContext {
+public interface ServerContext {
 
-    /** 保存客户端提交的任务列表*/
-    private static Map<String, List<TaskDetail>> map = new ConcurrentHashMap<>();
+    void addTask(String appName, List<TaskDetail> list);
 
-    public static void addTask(String appName, List<TaskDetail> list){
-        List<TaskDetail> taskDetails = map.get(appName);
-        if(taskDetails == null){
-            map.put(appName, list);
-        }
-    }
+    List<TaskDetail> getTaskList(@NonNull String appName);
 
-    public static List<TaskDetail> getTaskList(@NonNull String appName){
-
-        return map.get(appName);
-    }
-
-    public static void updateTaskList(@NonNull String appName, List<TaskDetail> list){
-        List<TaskDetail> taskDetails = map.get(appName);
-        taskDetails.clear();
-        taskDetails.addAll(list);
-    }
+    void updateTaskList(@NonNull String appName, List<TaskDetail> list);
 }

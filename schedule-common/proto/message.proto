@@ -1,5 +1,5 @@
 syntax = "proto3";
-option java_package = "com.fishlikewater.schedule.common.entity";
+//option java_package = "com.fishlikewater.schedule.common.entity";
 option java_outer_classname = "MessageProbuf";
 
 message Message{
@@ -14,4 +14,7 @@ enum MessageType{
    HEALTH = 1;
    CLOSE = 2;
    VALID = 3;
+   EXCUTOR = 4;
+   RESULT = 5;
+   INIT = 6;
 }

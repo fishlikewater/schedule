@@ -24,6 +24,8 @@ public class TaskDetail {
 
     private long nextTime;
 
+    private String appName;
+
     @JSONField(serialize=false)
     private ScheduleJob scheduleJob;
 

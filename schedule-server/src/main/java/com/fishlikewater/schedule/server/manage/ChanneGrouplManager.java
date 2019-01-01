@@ -24,5 +24,7 @@ public interface ChanneGrouplManager {
 
     ChannelGroup getGroup(@NonNull String appName);
 
+    Channel getRandomChannel(String appName);
+
 
 }

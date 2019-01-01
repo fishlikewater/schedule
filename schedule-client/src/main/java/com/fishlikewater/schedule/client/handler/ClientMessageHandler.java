@@ -11,7 +11,6 @@ import io.netty.channel.EventLoop;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -44,13 +43,18 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
             case HEALTH:
                 log.info("get receipt health packet from server");
                 break;
+            case CONNECTION:
+                TaskDetail taskDetail = JSON.parseObject(msg.getBody(), TaskDetail.class);
+                log.info("get server send task: {}", msg.getBody());
+                TaskDetail job = ScheduleJobContext.getInstance().getTaskDetail(taskDetail);
+                if(job != null){
+                        ScheduleExecutor.getInstance().excutor(ctx.channel(), job);
+                }else{
+                        log.warn("not found job【{}】", msg.getBody());
+                }
+                break;
             case CLOSE:
                 ctx.channel().close();
-            case CONNECTION:
-                List<TaskDetail> list = JSON.parseArray(msg.getBody(), TaskDetail.class);
-                log.info("get server send task: {}", JSON.toJSONString(list));
-                ScheduleJobContext.getInstance().updateCurrentJobList(list);
-                ScheduleExecutor.getInstance().beginJob();
         }
 
     }

@@ -2,6 +2,8 @@ package com.fishlikewater.schedule.server.boot;
 
 import com.fishlikewater.schedule.common.kit.NamedThreadFactory;
 import com.fishlikewater.schedule.common.kit.ScheduleKit;
+import com.fishlikewater.schedule.server.context.DefaultServerContext;
+import com.fishlikewater.schedule.server.context.ServerContext;
 import com.fishlikewater.schedule.server.handler.ServerHandlerInitializer;
 import com.fishlikewater.schedule.server.manage.*;
 import io.netty.bootstrap.ServerBootstrap;
@@ -42,6 +44,9 @@ public class ServerStart {
     @Getter
     @Setter
     private TaskDistribution taskDistribution;
+    @Getter
+    @Setter
+    private ServerContext serverContext;
 
     private static final ServerStart build =  new ServerStart();
 
@@ -60,6 +65,9 @@ public class ServerStart {
         }
         if (taskDistribution == null){
             this.taskDistribution = new DefaultTaskDistribution();
+        }
+        if(serverContext == null){
+            this.serverContext = new DefaultServerContext();
         }
         start(port, address);
     }

@@ -102,4 +102,13 @@ public class ScheduleJobContext {
         return this;
     }
 
+    public TaskDetail getTaskDetail(TaskDetail taskDetail){
+        for (TaskDetail detail : allJobList) {
+            if(detail.getSerialNumber() == taskDetail.getSerialNumber()){
+                return detail;
+            }
+        }
+        return null;
+    }
+
 }

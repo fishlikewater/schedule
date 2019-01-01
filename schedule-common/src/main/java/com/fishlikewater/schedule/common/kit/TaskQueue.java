@@ -1,4 +1,4 @@
-package com.fishlikewater.schedule.client.kit;
+package com.fishlikewater.schedule.common.kit;
 
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 

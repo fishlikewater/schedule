@@ -21,7 +21,7 @@ public class ServerHandlerInitializer extends ChannelInitializer<Channel> {
 
     private ServerStart serverStart;
 
-    public ServerHandlerInitializer(ServerStart serverStart){
+    public ServerHandlerInitializer(ServerStart serverStart) {
         this.serverStart = serverStart;
     }
 
@@ -32,7 +32,10 @@ public class ServerHandlerInitializer extends ChannelInitializer<Channel> {
                 .addLast(new ProtobufDecoder(MessageProbuf.Message.getDefaultInstance()))
                 .addLast(new ProtobufVarint32LengthFieldPrepender())
                 .addLast(new ProtobufEncoder())
-                .addLast(new ServerMessageHandler(serverStart.getChanneGrouplManager(), serverStart.getConnectionValidate(), serverStart.getTaskDistribution()));
+                .addLast(new ServerMessageHandler(serverStart.getChanneGrouplManager(),
+                        serverStart.getConnectionValidate(),
+                        serverStart.getTaskDistribution(),
+                        serverStart.getServerContext()));
 
     }
 }

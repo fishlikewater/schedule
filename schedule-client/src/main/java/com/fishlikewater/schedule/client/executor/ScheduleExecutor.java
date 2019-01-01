@@ -1,9 +1,11 @@
 package com.fishlikewater.schedule.client.executor;
 
 import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
-import com.fishlikewater.schedule.client.kit.TaskQueue;
+import com.fishlikewater.schedule.common.kit.TaskQueue;
+import com.fishlikewater.schedule.common.ScheduleJob;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import com.fishlikewater.schedule.common.kit.NamedThreadFactory;
+import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
@@ -26,6 +28,8 @@ public class ScheduleExecutor {
 
     private AtomicInteger stat = new AtomicInteger(0);
 
+    private Thread thread;
+
     public static ScheduleExecutor getInstance(){
         return ScheduleExecutorBuild.scheduleExecutor;
     }
@@ -34,11 +38,34 @@ public class ScheduleExecutor {
         private static ScheduleExecutor scheduleExecutor = new ScheduleExecutor();
     }
 
-    //private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
-
     private static final int cpuNum = Runtime.getRuntime().availableProcessors();
     public static final ExecutorService executor = new ThreadPoolExecutor(cpuNum*4, cpuNum*10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(100000), new NamedThreadFactory("schedule-executor@"));//CPU核数4-10倍
 
+    /**
+     * 客户端任务执行器
+     * @param channel
+     * @param taskDetail
+     */
+    public void excutor(Channel channel, TaskDetail taskDetail){
+        ScheduleExecutor.executor.submit(() ->{
+            try {
+                ScheduleJob scheduleJob = taskDetail.getScheduleJob();
+                scheduleJob.run();
+                /** 通知执行完成*/
+                //channel.writeAndFlush("");
+            }catch (Exception e){
+                log.warn("excutor job 【{}】 fail", taskDetail.getDesc());
+                /** 通知执行失败*/
+                channel.writeAndFlush("");
+            }
+
+        });
+    }
+
+
+    /**
+     * 重置队列
+     */
     public void resetQueue(){
         TaskQueue.getQueue().clear();
         List<TaskDetail> taskDetailList = ScheduleJobContext.getInstance().getCurrentJobList();
@@ -51,7 +78,9 @@ public class ScheduleExecutor {
         }
     }
 
-    private Thread thread;
+    /**
+     * 客户端队列执行器
+     */
     public void beginJob(){
         resetQueue();
         if(stat.get() == 0){

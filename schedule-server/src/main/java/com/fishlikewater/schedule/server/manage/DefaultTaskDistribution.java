@@ -3,7 +3,7 @@ package com.fishlikewater.schedule.server.manage;
 import com.alibaba.fastjson.JSON;
 import com.fishlikewater.schedule.common.entity.MessageProbuf;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
-import com.fishlikewater.schedule.server.context.ServerContext;
+import com.fishlikewater.schedule.server.boot.ServerStart;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 
@@ -24,7 +24,7 @@ public class DefaultTaskDistribution implements TaskDistribution {
         ChannelGroup group = channeGrouplManager.getGroup(from);
         Channel[] channels = group.toArray(new Channel[0]);
         int size = group.size();
-        List<TaskDetail> taskList = ServerContext.getTaskList(from);
+        List<TaskDetail> taskList = ServerStart.build().getServerContext().getTaskList(from);
         /** 按取模值将任务分配到实例中*/
         for (TaskDetail taskDetail : taskList) {
             int serialNumber = taskDetail.getSerialNumber();

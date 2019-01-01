@@ -7,7 +7,7 @@
     <groupId>com.github.fishlikewater</groupId>
     <artifactId>schedule</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0.RELEASE</version>
     <modules>
         <module>schedule-server</module>
         <module>schedule-client</module>
@@ -47,6 +47,8 @@
         <slf4j-api-version>1.7.25</slf4j-api-version>
         <protobuf.version>3.6.1</protobuf.version>
         <slf4j-log4j12-version>1.7.25</slf4j-log4j12-version>
+        <schedule.verison>1.0.0.RELEASE</schedule.verison>
+        <schedule.boot.verison>0.0.1.RELEASE</schedule.boot.verison>
     </properties>
 
     <dependencies>
@@ -100,38 +102,19 @@
                     </compilerArguments>
                 </configuration>
             </plugin>
-           <!-- <plugin>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>2.3.2</version>
-                <executions>
-                    <execution>
-                        <id>default-jar</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
-            <plugin>
-                <groupId>com.mycila</groupId>
-                <artifactId>license-maven-plugin</artifactId>
-                <version>3.0</version>
-                <inherited>false</inherited>
-                <configuration>
-                    <header>${project.basedir}/LICENSE</header>
-                    <includes>
-                        <include>src/main/java/**</include>
-                    </includes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            <!-- <plugin>
+                 <artifactId>maven-jar-plugin</artifactId>
+                 <version>2.3.2</version>
+                 <executions>
+                     <execution>
+                         <id>default-jar</id>
+                         <phase>package</phase>
+                         <goals>
+                             <goal>jar</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+             </plugin>-->
         </plugins>
     </build>
 
@@ -140,7 +123,26 @@
             <id>release</id>
             <build>
                 <plugins>
-                   <plugin>
+                    <plugin>
+                        <groupId>com.mycila</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <version>3.0</version>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <header>${project.basedir}/LICENSE</header>
+                            <includes>
+                                <include>src/main/java/**</include>
+                            </includes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <executions>
@@ -151,12 +153,12 @@
                                 </goals>
                             </execution>
                         </executions>
-                       <configuration>
-                           <additionalJOption>-Xdoclint:none</additionalJOption>
-                           <encoding>${project.build.sourceEncoding}</encoding>
-                           <outputDirectory>${basedir}/target/javadoc</outputDirectory>
-                           <reportOutputDirectory>${basedir}/target/javadoc</reportOutputDirectory>
-                       </configuration>
+                        <configuration>
+                            <additionalJOption>-Xdoclint:none</additionalJOption>
+                            <encoding>${project.build.sourceEncoding}</encoding>
+                            <outputDirectory>${basedir}/target/javadoc</outputDirectory>
+                            <reportOutputDirectory>${basedir}/target/javadoc</reportOutputDirectory>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

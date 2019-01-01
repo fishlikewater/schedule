@@ -1,5 +1,6 @@
 package com.fishlikewater.schedule.server.manage;
 
+import cn.hutool.core.util.RandomUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -51,6 +52,14 @@ public class DefaultChanneGrouplManager implements ChanneGrouplManager {
     }
 
     public ChannelGroup getGroup(@NonNull String appName){return groupMap.get(appName);}
+
+    @Override
+    public Channel getRandomChannel(String appName) {
+        ChannelGroup group = getGroup(appName);
+        int anInt = RandomUtil.randomInt(group.size());
+        Channel[] channels = group.toArray(new Channel[0]);
+        return channels[anInt];
+    }
 
 
 }

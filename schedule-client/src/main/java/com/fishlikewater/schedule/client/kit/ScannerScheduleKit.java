@@ -65,6 +65,7 @@ public class ScannerScheduleKit {
                 ScheduleJob scheduleJob = (ScheduleJob)aClass.newInstance();
                 list.add(new TaskDetail()
                         .setSerialNumber(++num)
+                        .setAppName(ScheduleJobContext.getInstance().getAppName())
                         .setCorn(value)
                         .setCronSequenceGenerator(new CronSequenceGenerator(value))
                         .setDesc(desc)
