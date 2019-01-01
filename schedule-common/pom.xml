@@ -6,10 +6,12 @@
         <artifactId>schedule</artifactId>
         <groupId>com.github.fishlikewater</groupId>
         <version>1.0.0.RELEASE</version>
+        <relativePath/>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
+    <url>http://www.nepxion.com</url>
     <artifactId>schedule-common</artifactId>
+    <description>schedule-common</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
