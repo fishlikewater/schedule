@@ -1,16 +1,21 @@
 package com.fishlikewater.client.sample;
 
+import com.fishlikewater.client.sample.schedule.ScheduleServer1;
+import com.fishlikewater.client.sample.schedule.ScheduleServer2;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest
+/*@RunWith(SpringRunner.class)
+@SpringBootTest*/
 public class SpringBootScheduleClientSampleApplicationTests {
 
     @Test
     public void contextLoads() {
+    }
+
+    @Test
+    public void test1(){
+        ScheduleServer1 server1 = new ScheduleServer1();
+        ScheduleServer2 server2 = new ScheduleServer2();
     }
 
 }

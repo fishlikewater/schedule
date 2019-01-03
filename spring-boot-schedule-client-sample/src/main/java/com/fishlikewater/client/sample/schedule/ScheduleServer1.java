@@ -11,10 +11,10 @@ import com.fishlikewater.schedule.common.ScheduleJob;
  * @Description
  * @date 2018年12月28日 12:56
  **/
-@Schedule(value = "0/10 * * * * *", desc = "测试定时任务1")
+@Schedule(value = "0/10 * * * * *", desc = "测试定时任务10秒")
 public class ScheduleServer1 implements ScheduleJob {
     @Override
     public void run() {
-        System.out.println("ScheduleServer1");
+        System.out.println("测试定时任务10秒");
     }
 }
