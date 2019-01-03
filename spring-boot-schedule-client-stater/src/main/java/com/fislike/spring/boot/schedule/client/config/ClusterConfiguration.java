@@ -42,7 +42,8 @@ public class ClusterConfiguration {
             scheduleJobContext.setBasePath(scheduleClientProperties.getBasePackage());
         }
         if(scheduleClientProperties.getServerPort() != 0) scheduleJobContext.setPORT(scheduleClientProperties.getServerPort());
-        if(scheduleClientProperties.getServerAddress() != null) scheduleJobContext.setHOST(scheduleClientProperties.getServerAddress());
+        if(scheduleClientProperties.getServerHost() != null) scheduleJobContext.setHOST(scheduleClientProperties.getServerHost());
+        if(scheduleClientProperties.getServerAddress() != null) scheduleJobContext.setAddress(scheduleClientProperties.getServerAddress());
         if(scheduleClientProperties.getMatchUnit() == MatchUnit.SECOND){
             scheduleJobContext.setSleepTime(1000l);
         }else{

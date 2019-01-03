@@ -1,5 +1,6 @@
 package com.fishlikewater.schedule.client.boot;
 
+import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.fishlikewater.schedule.client.handler.ClientHandlerInitializer;
 import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
@@ -7,6 +8,7 @@ import com.fishlikewater.schedule.common.entity.MessageProbuf;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import com.fishlikewater.schedule.common.kit.NamedThreadFactory;
 import com.fishlikewater.schedule.common.kit.ScheduleKit;
+import com.fishlikewater.schedule.common.kit.StringUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
@@ -27,8 +29,8 @@ import java.util.List;
 import java.util.function.Supplier;
 
 /**
- * @a1uthor zhangx
  * @version V1.0
+ * @a1uthor zhangx
  * @mail fishlikewater@126.com
  * @ClassName ClientStart
  * @Description
@@ -59,6 +61,7 @@ public class ClientStart {
     private String HOST;
     private int PORT;
     private String appName;
+
     private ClientStart() {
 
     }
@@ -68,21 +71,44 @@ public class ClientStart {
         return this;
     }
 
+    /**
+     * 首次初始化连接
+     */
     public void run() {
-        registerShutdownHook(() ->{
+        registerShutdownHook(() -> {
             this.stop();
             return null;
 
         });
-        HOST = ScheduleJobContext.getInstance().getHOST();
-        PORT = ScheduleJobContext.getInstance().getPORT();
         appName = ScheduleJobContext.getInstance().getAppName();
         bootstrapConfig();
         start();
     }
 
-    private Bootstrap bootstrapConfig(){
-        if(clientstrap == null) clientstrap = new Bootstrap();
+    /**
+     * 设置连接服务地址
+     */
+    private void setPortAndHost() {
+        String address = ScheduleJobContext.getInstance().getAddress();
+        if (StringUtils.isEmpty(address)) {
+            HOST = ScheduleJobContext.getInstance().getHOST();
+            PORT = ScheduleJobContext.getInstance().getPORT();
+        }else{
+            String[] addArr = address.split(",");
+            int anInt = RandomUtil.randomInt(addArr.length);
+            String add = addArr[anInt];
+            String[] portAndHost = add.split(":");
+            HOST = portAndHost[0];
+            PORT = Integer.valueOf(portAndHost[1]);
+        }
+    }
+
+    /**
+     * 连接配置初始化
+     * @return
+     */
+    private Bootstrap bootstrapConfig() {
+        if (clientstrap == null) clientstrap = new Bootstrap();
         clientstrap.option(ChannelOption.SO_REUSEADDR, true);
         clientstrap.option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
         if (ScheduleKit.epollIsAvailable()) {//linux系统下使用epoll
@@ -97,7 +123,11 @@ public class ClientStart {
         return clientstrap;
     }
 
+    /**
+     * 开始连接
+     */
     public void start() {
+        setPortAndHost();
         try {
             ChannelFuture future = clientstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();
@@ -112,6 +142,7 @@ public class ClientStart {
 
     /**
      * 连接成功后的操作
+     *
      * @param channel
      */
     private void afterConnectionSuccessful(Channel channel) {
@@ -122,8 +153,8 @@ public class ClientStart {
                 .setExtend(appName)
                 .setType(MessageProbuf.MessageType.VALID)
                 .build();
-        channel.writeAndFlush(validMessage).addListener(f->{
-            if (f.isSuccess()){
+        channel.writeAndFlush(validMessage).addListener(f -> {
+            if (f.isSuccess()) {
                 sendScannerInfo(channel);
             }
         });
@@ -159,7 +190,8 @@ public class ClientStart {
             log.error("scheduleClient shutdown error", e);
         }
     }
-    private void registerShutdownHook(Supplier supplier){
+
+    private void registerShutdownHook(Supplier supplier) {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 try {
@@ -174,6 +206,7 @@ public class ClientStart {
 
         });
     }
+
     public static void main(String[] args) {
         ScheduleJobContext.getInstance().setBasePath("com.fishlikewater");
         ClientStart.build().run();

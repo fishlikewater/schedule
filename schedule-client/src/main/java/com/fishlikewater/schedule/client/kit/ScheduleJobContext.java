@@ -52,6 +52,9 @@ public class ScheduleJobContext {
     @Setter
     @Getter
     private long retryInterval = 60l;
+    @Setter
+    @Getter
+    private String address;//e.g 127.0.0.1:8080,127.0.0.1:8081
 
     /**
      * 获取扫描到的所有 实例

@@ -16,6 +16,9 @@ public class ScheduleClientProperties {
 
     private int serverPort;
 
+    private String serverHost;
+
+    /** e.g 127.0.0.1:8080,127.0.0.1:8081*/
     private String serverAddress;
 
     /** scaner basePackage muilt package use ',' split */
@@ -80,6 +83,15 @@ public class ScheduleClientProperties {
 
     public ScheduleClientProperties setRetryInterval(long retryInterval) {
         this.retryInterval = retryInterval;
+        return this;
+    }
+
+    public String getServerHost() {
+        return serverHost;
+    }
+
+    public ScheduleClientProperties setServerHost(String serverHost) {
+        this.serverHost = serverHost;
         return this;
     }
 }
