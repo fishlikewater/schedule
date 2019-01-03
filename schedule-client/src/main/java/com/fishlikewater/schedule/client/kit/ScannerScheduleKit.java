@@ -53,6 +53,10 @@ public class ScannerScheduleKit {
     public static List<TaskDetail> loadJobClass(String... basePackage){
         List<TaskDetail> list = new ArrayList<>();
         List<Class<?>> classes = scannerSchedulePackage(basePackage);
+        classes.sort((o1, o2)->{
+
+            return o1.getName().compareTo(o2.getName());
+        });
         int num = 0;
         for (Class<?> aClass : classes) {
             try {
