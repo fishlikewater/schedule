@@ -20,4 +20,8 @@ public interface ServerContext {
     List<TaskDetail> getTaskList(@NonNull String appName);
 
     void updateTaskList(@NonNull String appName, List<TaskDetail> list);
+
+    List<TaskDetail> getTaskList();
+
+    TaskDetail getTaskDetail();
 }

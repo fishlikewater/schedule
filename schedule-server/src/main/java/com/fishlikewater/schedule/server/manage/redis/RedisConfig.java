@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 @Data
 public class RedisConfig {
 
-    private RedisAsyncCommands redisAsyncCommands;
+    private RedisAsyncCommands<String, String> redisAsyncCommands;
 
     private RedisClient redisClient;
 
@@ -48,7 +48,7 @@ public class RedisConfig {
      * redis 异步连接
      * @return
      */
-    private RedisAsyncCommands initRedisCommands(){
+    public RedisAsyncCommands initRedisCommands(){
         RedisAsyncCommands<String, String> redisAsyncCommands = redisClient.connect().async();
         this.redisAsyncCommands = redisAsyncCommands;
         return redisAsyncCommands;
@@ -59,7 +59,7 @@ public class RedisConfig {
      * @param address
      * @return
      */
-    private RedisClient initRedisClient(String address){
+    public RedisClient initRedisClient(String address){
         RedisURI redisUri = RedisURI.create(address);
         RedisClient redisClient = RedisClient.create(redisUri);
         redisClient.setDefaultTimeout(timeout, TimeUnit.SECONDS);
@@ -70,7 +70,7 @@ public class RedisConfig {
     /**
      * 订阅redis
      */
-    private void initPubAndSub(){
+    protected void initPubAndSub(){
         StatefulRedisPubSubConnection<String, String> pubSubConnection = redisClient.connectPubSub();
         pubSubConnection.addListener(new ScheduleRedisPubSubListener());
         RedisPubSubAsyncCommands<String, String> asyncCommands = pubSubConnection.async();

@@ -43,7 +43,7 @@ public class ClientMessageHandler extends SimpleChannelInboundHandler<MessagePro
             case HEALTH:
                 log.info("get receipt health packet from server");
                 break;
-            case CONNECTION:
+            case EXCUTOR:
                 TaskDetail taskDetail = JSON.parseObject(msg.getBody(), TaskDetail.class);
                 log.info("get server send task: {}", msg.getBody());
                 TaskDetail job = ScheduleJobContext.getInstance().getTaskDetail(taskDetail);

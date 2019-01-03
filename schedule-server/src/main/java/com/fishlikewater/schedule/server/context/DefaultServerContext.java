@@ -4,6 +4,7 @@ import com.fishlikewater.schedule.common.entity.TaskDetail;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,5 +39,19 @@ public class DefaultServerContext implements ServerContext{
         List<TaskDetail> taskDetails = map.get(appName);
         taskDetails.clear();
         taskDetails.addAll(list);
+    }
+
+    @Override
+    public List<TaskDetail> getTaskList() {
+        List<TaskDetail> list = new ArrayList<>();
+        for (Map.Entry<String, List<TaskDetail>> entry : map.entrySet()) {
+            list.addAll(entry.getValue());
+        }
+        return list;
+    }
+
+    @Override
+    public TaskDetail getTaskDetail() {
+        return null;
     }
 }

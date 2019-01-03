@@ -4,10 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.fishlikewater.schedule.common.entity.MessageProbuf;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import com.fishlikewater.schedule.server.context.ServerContext;
-import com.fishlikewater.schedule.server.executor.ScheduleExecutor;
+import com.fishlikewater.schedule.server.executor.Executor;
 import com.fishlikewater.schedule.server.manage.ChanneGrouplManager;
 import com.fishlikewater.schedule.server.manage.ConnectionValidate;
-import com.fishlikewater.schedule.server.manage.TaskDistribution;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -28,15 +27,15 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<MessagePro
 
     private ChanneGrouplManager channeGrouplManager;
     private ConnectionValidate connectionValidate;
-    private TaskDistribution taskDistribution;
     private ServerContext serverContext;
+    private Executor executor;
 
     public ServerMessageHandler(ChanneGrouplManager channeGrouplManager, ConnectionValidate connectionValidate,
-                                TaskDistribution taskDistribution, ServerContext serverContext) {
+                               ServerContext serverContext, Executor executor) {
         this.channeGrouplManager = channeGrouplManager;
         this.connectionValidate = connectionValidate;
-        this.taskDistribution = taskDistribution;
         this.serverContext = serverContext;
+        this.executor = executor;
     }
 
     private MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
@@ -98,14 +97,13 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 return;
             }
             switch (typeValue) {
-                case MessageProbuf.MessageType.CONNECTION_VALUE://初始化任务
+                case MessageProbuf.MessageType.INIT_VALUE://初始化任务
                     int size = channeGrouplManager.getGroup(msg.getExtend()).size();
                     log.info("current client number 【{}】", size);
                     List<TaskDetail> list = JSON.parseArray(msg.getBody(), TaskDetail.class);
                     serverContext.addTask(msg.getExtend(), list);
                     /** 分配任务*/
-                    ScheduleExecutor.getInstance().beginJob(list, channeGrouplManager);
-                    //taskDistribution.distribution(msg.getExtend(), ctx.channel(), channeGrouplManager);
+                    executor.beginJob(serverContext, channeGrouplManager);
                     break;
                 case MessageProbuf.MessageType.CLOSE_VALUE:
                     ctx.close();
@@ -115,7 +113,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<MessagePro
                     ctx.channel().writeAndFlush(message);
                     break;
                 default:
-                    log.info("don't support this message type");
+                    log.warn("don't support this message type");
             }
         }
     }

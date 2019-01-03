@@ -6,6 +6,7 @@ import com.fishlikewater.schedule.common.entity.MessageProbuf;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import com.fishlikewater.schedule.common.kit.CronSequenceGenerator;
 import com.fishlikewater.schedule.common.kit.TaskQueue;
+import com.fishlikewater.schedule.server.context.ServerContext;
 import com.fishlikewater.schedule.server.manage.ChanneGrouplManager;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
@@ -22,19 +23,19 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2018年12月26日 14:32
  **/
 @Slf4j
-public class ScheduleExecutor {
+public class ScheduleExecutor implements Executor{
 
     private AtomicInteger stat = new AtomicInteger(0);
 
     private Thread thread;
 
-    public static ScheduleExecutor getInstance() {
+   /* public static ScheduleExecutor getInstance() {
         return ScheduleExecutorBuild.scheduleExecutor;
     }
 
     private static class ScheduleExecutorBuild {
         private static ScheduleExecutor scheduleExecutor = new ScheduleExecutor();
-    }
+    }*/
 
     /**
      * 重置队列
@@ -54,8 +55,10 @@ public class ScheduleExecutor {
     /**
      * 客户端队列执行器
      */
-    public void beginJob(List<TaskDetail> taskDetailList, ChanneGrouplManager channeGrouplManager) {
-        resetQueue(taskDetailList);
+    @Override
+    public void beginJob(ServerContext serverContext, ChanneGrouplManager channeGrouplManager) {
+
+        resetQueue(serverContext.getTaskList());
         if (stat.get() == 0) {
             log.info("actuator starts execution...");
             thread = new Thread() {
@@ -71,7 +74,7 @@ public class ScheduleExecutor {
                                     /** 发送到一个随机实例执行*/
                                     Channel channel = channeGrouplManager.getRandomChannel(taskDetail.getAppName());
                                     channel.writeAndFlush(MessageProbuf.Message.newBuilder()
-                                            .setType(MessageProbuf.MessageType.CONNECTION)
+                                            .setType(MessageProbuf.MessageType.EXCUTOR)
                                             .setBody(JSON.toJSONString(taskDetail))
                                             .build());
                                     long cTimeMillis = System.currentTimeMillis();
@@ -83,14 +86,7 @@ public class ScheduleExecutor {
                             }
                             Thread.sleep(1000);
                         } catch (Exception e) {
-                            if (thread.isAlive()) {
-                                boolean interrupted = thread.isInterrupted();
-                                if (interrupted) {
-                                    thread.start();
-                                }
-                            } else {
-                                thread.start();
-                            }
+                            reStartThred(thread);
                         }
                     }
                 }

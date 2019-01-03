@@ -56,9 +56,14 @@ public class DefaultChanneGrouplManager implements ChanneGrouplManager {
     @Override
     public Channel getRandomChannel(String appName) {
         ChannelGroup group = getGroup(appName);
-        int anInt = RandomUtil.randomInt(group.size());
-        Channel[] channels = group.toArray(new Channel[0]);
-        return channels[anInt];
+        if(group.size()>0){
+            int anInt = RandomUtil.randomInt(group.size());
+            Channel[] channels = group.toArray(new Channel[0]);
+            return channels[anInt];
+        }else{
+            return null;
+        }
+
     }
 
 

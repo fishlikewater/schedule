@@ -33,14 +33,6 @@ public class ScheduleServerConfiguration {
 
     @EventListener
     public void deployScheduleClient(ApplicationReadyEvent event){
-        int port = 9000;
-        String address = "127.0.0.1";
-        if(scheduleServerProperties.getServerPort() != 0){
-            port = scheduleServerProperties.getServerPort();
-        }
-        if(scheduleServerProperties.getServerAddress() != null){
-            address = scheduleServerProperties.getServerAddress();
-        }
-        ServerStart.build().run(port, address);
+        ServerStart.build().run(scheduleServerProperties.getServerPort(), scheduleServerProperties.getServerAddress());
     }
 }

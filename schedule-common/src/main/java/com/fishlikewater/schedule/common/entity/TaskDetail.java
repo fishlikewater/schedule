@@ -22,6 +22,7 @@ public class TaskDetail {
 
     private String corn;
 
+    @JSONField(serialize=false)
     private long nextTime;
 
     private String appName;

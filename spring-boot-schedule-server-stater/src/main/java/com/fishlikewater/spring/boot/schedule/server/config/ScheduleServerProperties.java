@@ -15,9 +15,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 public class ScheduleServerProperties {
 
-    private int serverPort;
+    private int serverPort = 9000;
 
-    private String serverAddress;
+    private String serverAddress = "127.0.0.1";
 
     private boolean enabled;
+
+    private String redisAddress;
+
 }

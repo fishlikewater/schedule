@@ -17,8 +17,6 @@ import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.FutureListener;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -124,9 +122,8 @@ public class ClientStart {
                 .setExtend(appName)
                 .setType(MessageProbuf.MessageType.VALID)
                 .build();
-        channel.writeAndFlush(validMessage).addListener(new FutureListener() {
-            @Override
-            public void operationComplete(Future future) throws Exception {
+        channel.writeAndFlush(validMessage).addListener(f->{
+            if (f.isSuccess()){
                 sendScannerInfo(channel);
             }
         });
@@ -142,7 +139,7 @@ public class ClientStart {
                 .newBuilder()
                 .setExtend(appName)
                 .setBody(jsonString)
-                .setType(MessageProbuf.MessageType.CONNECTION)
+                .setType(MessageProbuf.MessageType.INIT)
                 .build();
         channel.writeAndFlush(initMessage);
     }

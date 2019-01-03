@@ -1,12 +1,15 @@
 package com.fishlikewater;
 
-import com.lambdaworks.redis.RedisClient;
-import com.lambdaworks.redis.RedisFuture;
-import com.lambdaworks.redis.RedisURI;
+import com.lambdaworks.redis.*;
+import com.lambdaworks.redis.api.async.RedisAsyncCommands;
 import com.lambdaworks.redis.pubsub.RedisPubSubListener;
 import com.lambdaworks.redis.pubsub.StatefulRedisPubSubConnection;
 import com.lambdaworks.redis.pubsub.api.async.RedisPubSubAsyncCommands;
 import org.junit.Test;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertTrue;
 
@@ -24,19 +27,55 @@ public class AppTest
         assertTrue( true );
     }
 
-/*    @Test
-    public void testRedis() throws InterruptedException {
-        RedisAsyncCommands redisCommands = RedisConfig.getInstance().getRedisCommands("redis://localhost:6379/0");
-        List list = new ArrayList();
-        list.add("3");
-        list.add("4");
-        RedisFuture redisFuture = redisCommands.lpush("test11", list.toArray(new String[0]));
-        redisFuture.thenAccept(t ->{
-            System.out.println(t);
-        });
-
+    @Test
+    public void testRedis() throws InterruptedException, ExecutionException {
+        RedisURI redisUri = RedisURI.create("redis://localhost:6379/0");
+        RedisClient redisClient = RedisClient.create(redisUri);
+        RedisAsyncCommands redisCommands = redisClient.connect().async();
+        redisCommands.zadd("testZadd", 1, "8");
+        redisCommands.zadd("testZadd", 2, "2");
+        redisCommands.zadd("testZadd", 3, "3");
+        RedisFuture future = redisCommands.zrange("testZadd", 0, 0);
+        Object o = future.get();
+        System.out.println(o);
         Thread.sleep(2000);
-    }*/
+    }
+
+    @Test
+    public void testRedisScore() throws InterruptedException, ExecutionException {
+        RedisURI redisUri = RedisURI.create("redis://localhost:6379/0");
+        RedisClient redisClient = RedisClient.create(redisUri);
+        RedisAsyncCommands redisCommands = redisClient.connect().async();
+        RedisFuture future = redisCommands.zrangebyscore("testZadd", Range.create(1,2));
+        Object o = future.get();
+        System.out.println(o);
+        Thread.sleep(2000);
+    }
+
+
+    @Test
+    public void redisLock() throws InterruptedException, ExecutionException, TimeoutException {
+        RedisURI redisUri = RedisURI.create("redis://localhost:6379/0");
+        RedisClient redisClient = RedisClient.create(redisUri);
+        String SCRIPT_LOCK = "return redis.call('set',KEYS[1],ARGV[1],'NX','PX',ARGV[2])";
+        RedisAsyncCommands<String, String> redisCommands = redisClient.connect().async();
+        String[] objects = {"SCHEDULE_LOCK"};
+        RedisFuture<Boolean> eval = redisCommands.eval(SCRIPT_LOCK, ScriptOutputType.BOOLEAN, objects,"1","20000");
+        Boolean isLock = eval.get(2, TimeUnit.SECONDS);
+        System.out.println(isLock);
+    }
+
+    @Test
+    public void redisUnLock() throws InterruptedException, ExecutionException, TimeoutException {
+        RedisURI redisUri = RedisURI.create("redis://localhost:6379/0");
+        RedisClient redisClient = RedisClient.create(redisUri);
+        String SCRIPT_UNLOCK = "if redis.call('get',KEYS[1]) == ARGV[1] then return tostring(redis.call('del', KEYS[1])==1) else return 'false' end";
+        RedisAsyncCommands<String, String> redisCommands = redisClient.connect().async();
+        String[] objects = {"SCHEDULE_LOCK"};
+        RedisFuture<Boolean> eval = redisCommands.eval(SCRIPT_UNLOCK, ScriptOutputType.BOOLEAN, objects,"1");
+        Boolean isLock = eval.get(2, TimeUnit.SECONDS);
+        System.out.println(isLock);
+    }
 
     @Test
     public void test2() throws InterruptedException {
