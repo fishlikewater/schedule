@@ -14,6 +14,20 @@
     </a>
 </p>
 
+#### 更新
+
+> 添加统一控制台(2019-01-04)
+
+项目spring-boot-schedule-server-console为统一控制
+
+提供查询修改接口
+
+1. /schedule/all(GET) 获取所有的任务
+
+2. /schedule/record(GET) 获取所有已执行记录
+
+3. /schedule/status(POST) 开启或停止任务
+
 #### 介绍
 轻量的分布式任务调度框架。
 
