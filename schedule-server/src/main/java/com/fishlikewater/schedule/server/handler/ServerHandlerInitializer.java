@@ -32,8 +32,7 @@ public class ServerHandlerInitializer extends ChannelInitializer<Channel> {
                 .addLast(new ProtobufDecoder(MessageProbuf.Message.getDefaultInstance()))
                 .addLast(new ProtobufVarint32LengthFieldPrepender())
                 .addLast(new ProtobufEncoder())
-                .addLast(new ServerMessageHandler(serverStart.getChanneGrouplManager(),
-                        serverStart.getConnectionValidate(),
+                .addLast(new ServerMessageHandler(serverStart.getConnectionValidate(),
                         serverStart.getServerContext(),
                         serverStart.getExecutor()));
 

@@ -39,9 +39,6 @@ public class ServerStart {
     /** channel 管理实现*/
     @Getter
     @Setter
-    private ChanneGrouplManager channeGrouplManager;
-    @Getter
-    @Setter
     private ConnectionValidate connectionValidate;
     @Getter
     @Setter
@@ -59,9 +56,6 @@ public class ServerStart {
     }
 
     public void run(int port, String address){
-        if(this.channeGrouplManager == null){
-            this.channeGrouplManager = new DefaultChanneGrouplManager();
-        }
         if(this.connectionValidate == null){
             this.connectionValidate = new DefaultConnectionValidate();
         }

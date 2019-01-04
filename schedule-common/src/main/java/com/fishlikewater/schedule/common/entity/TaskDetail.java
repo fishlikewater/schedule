@@ -37,4 +37,11 @@ public class TaskDetail {
 
     @JSONField(serialize=false)
     private String actionAdress;
+
+    private boolean executorResult;//执行结果
+
+    private long executorTime;//执行时间
+
+    @JSONField(serialize=false)
+    private boolean isUse = true;//是否使用
 }

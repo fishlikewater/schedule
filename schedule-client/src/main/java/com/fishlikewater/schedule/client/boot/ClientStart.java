@@ -119,7 +119,6 @@ public class ClientStart {
             clientstrap.group(bossGroup).channel(NioSocketChannel.class);
         }
         clientstrap.handler(new ClientHandlerInitializer());
-        clientstrap.remoteAddress(new InetSocketAddress(HOST, PORT));
         return clientstrap;
     }
 
@@ -128,6 +127,7 @@ public class ClientStart {
      */
     public void start() {
         setPortAndHost();
+        clientstrap.remoteAddress(new InetSocketAddress(HOST, PORT));
         try {
             ChannelFuture future = clientstrap.connect().addListener(connectionListener).sync();
             this.channel = future.channel();

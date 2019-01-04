@@ -56,7 +56,7 @@ public class ScheduleExecutor implements Executor{
      * 客户端队列执行器
      */
     @Override
-    public void beginJob(ServerContext serverContext, ChanneGrouplManager channeGrouplManager) {
+    public void beginJob(ServerContext serverContext) {
 
         resetQueue(serverContext.getTaskList());
         if (stat.get() == 0) {
@@ -70,21 +70,25 @@ public class ScheduleExecutor implements Executor{
                             /** 从队列中取出任务 放到线程池中去 执行*/
                             TaskDetail taskDetail = TaskQueue.peek();
                             if (taskDetail != null) {
-                                if (curTimeMillis >= taskDetail.getNextTime()) {
-                                    /** 发送到一个随机实例执行*/
-                                    Channel channel = channeGrouplManager.getRandomChannel(taskDetail.getAppName());
-                                    channel.writeAndFlush(MessageProbuf.Message.newBuilder()
-                                            .setType(MessageProbuf.MessageType.EXCUTOR)
-                                            .setBody(JSON.toJSONString(taskDetail))
-                                            .build());
-                                    long cTimeMillis = System.currentTimeMillis();
-                                    long next = taskDetail.getCronSequenceGenerator().next(cTimeMillis);
-                                    taskDetail.setNextTime(next);
-                                    TaskQueue.remove();
-                                    TaskQueue.add(taskDetail);
+                                if(taskDetail.isUse()){
+                                    if (curTimeMillis >= taskDetail.getNextTime()) {
+                                        /** 发送到一个随机实例执行*/
+                                        Channel channel = ChanneGrouplManager.getRandomChannel(taskDetail.getAppName());
+                                        channel.writeAndFlush(MessageProbuf.Message.newBuilder()
+                                                .setType(MessageProbuf.MessageType.EXCUTOR)
+                                                .setBody(JSON.toJSONString(taskDetail))
+                                                .build());
+                                        long cTimeMillis = System.currentTimeMillis();
+                                        long next = taskDetail.getCronSequenceGenerator().next(cTimeMillis);
+                                        taskDetail.setNextTime(next);
+                                        TaskQueue.getQueue().remove(taskDetail);
+                                        TaskQueue.add(taskDetail);
+                                    }
+                                }else {
+                                    TaskQueue.getQueue().remove(taskDetail);
                                 }
                             }
-                            Thread.sleep(1000);
+                            Thread.sleep(100l);
                         } catch (Exception e) {
                             reStartThred(thread);
                         }

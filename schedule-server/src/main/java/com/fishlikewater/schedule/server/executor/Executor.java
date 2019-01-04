@@ -1,7 +1,6 @@
 package com.fishlikewater.schedule.server.executor;
 
 import com.fishlikewater.schedule.server.context.ServerContext;
-import com.fishlikewater.schedule.server.manage.ChanneGrouplManager;
 
 /**
  * @author zhangx
@@ -12,7 +11,7 @@ import com.fishlikewater.schedule.server.manage.ChanneGrouplManager;
  * @date 2019年01月02日 17:22
  **/
 public interface Executor {
-    void beginJob(ServerContext serverContext, ChanneGrouplManager channeGrouplManager);
+    void beginJob(ServerContext serverContext);
 
     default void reStartThred(Thread thread){
         if (thread.isAlive()) {

@@ -1,8 +1,14 @@
 package com.fishlikewater.schedule.server.manage;
 
+import cn.hutool.core.util.RandomUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.NonNull;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author zhangx
@@ -10,21 +16,52 @@ import lombok.NonNull;
  * @mail fishlikewater@126.com
  * @ClassName ChanneGrouplManager
  * @Description
- * @date 2018年11月24日 14:35
+ * @date 2018年11月25日 10:57
  **/
-public interface ChanneGrouplManager {
+public class ChanneGrouplManager {
 
 
-
+    private static Map<String, ChannelGroup> groupMap = new ConcurrentHashMap<>();
     /** 缓存channel*/
-    boolean addChannel(@NonNull String appName, @NonNull Channel channel);
+    public static boolean addChannel(@NonNull String appName, @NonNull Channel channel){
+        boolean isSuccess = false;
+        ChannelGroup channels = groupMap.get(appName);
+        if(channels == null){
+            ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+            isSuccess = group.add(channel);
+            groupMap.put(appName, group);
+        }else {
+            isSuccess = channels.add(channel);
+        }
+        return isSuccess;
+    };
 
     /** 删除channel*/
-    boolean removeChannel(@NonNull Channel channel);
+    public static boolean removeChannel(@NonNull Channel channel){
+        boolean isSuccess = false;
+        for (Map.Entry<String, ChannelGroup> entry : groupMap.entrySet()) {
+            boolean contains = entry.getValue().contains(channel);
+            if (contains){
+                isSuccess = entry.getValue().remove(channel);
+                break;
+            }
+        }
+        return isSuccess;
+    }
 
-    ChannelGroup getGroup(@NonNull String appName);
+    public static ChannelGroup getGroup(@NonNull String appName){return groupMap.get(appName);}
 
-    Channel getRandomChannel(String appName);
+    public static Channel getRandomChannel(String appName) {
+        ChannelGroup group = getGroup(appName);
+        if(group.size()>0){
+            int anInt = RandomUtil.randomInt(group.size());
+            Channel[] channels = group.toArray(new Channel[0]);
+            return channels[anInt];
+        }else{
+            return null;
+        }
+
+    }
 
 
 }

@@ -7,6 +7,7 @@ import com.fishlikewater.schedule.server.context.ServerContext;
 import com.fishlikewater.schedule.server.executor.Executor;
 import com.fishlikewater.schedule.server.manage.ChanneGrouplManager;
 import com.fishlikewater.schedule.server.manage.ConnectionValidate;
+import com.fishlikewater.schedule.server.manage.record.RecordManage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -25,14 +26,12 @@ import java.util.List;
 @Slf4j
 public class ServerMessageHandler extends SimpleChannelInboundHandler<MessageProbuf.Message> {
 
-    private ChanneGrouplManager channeGrouplManager;
     private ConnectionValidate connectionValidate;
     private ServerContext serverContext;
     private Executor executor;
 
-    public ServerMessageHandler(ChanneGrouplManager channeGrouplManager, ConnectionValidate connectionValidate,
+    public ServerMessageHandler(ConnectionValidate connectionValidate,
                                ServerContext serverContext, Executor executor) {
-        this.channeGrouplManager = channeGrouplManager;
         this.connectionValidate = connectionValidate;
         this.serverContext = serverContext;
         this.executor = executor;
@@ -75,7 +74,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<MessagePro
      */
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        channeGrouplManager.removeChannel(ctx.channel());
+        ChanneGrouplManager.removeChannel(ctx.channel());
     }
 
     @Override
@@ -85,25 +84,25 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<MessagePro
             boolean validate = connectionValidate.validate(msg.getBody());
             if (!validate){
                 log.info("valid fail");
-                channeGrouplManager.removeChannel(ctx.channel());
+                ChanneGrouplManager.removeChannel(ctx.channel());
                 ctx.close();
             }
             log.info("valid successful");
-            channeGrouplManager.addChannel(msg.getExtend(), ctx.channel());
+            ChanneGrouplManager.addChannel(msg.getExtend(), ctx.channel());
         } else {
-            Channel channel = channeGrouplManager.getGroup(msg.getExtend()).find(ctx.channel().id());
+            Channel channel = ChanneGrouplManager.getGroup(msg.getExtend()).find(ctx.channel().id());
             if (channel ==null){
                 ctx.close();
                 return;
             }
             switch (typeValue) {
                 case MessageProbuf.MessageType.INIT_VALUE://初始化任务
-                    int size = channeGrouplManager.getGroup(msg.getExtend()).size();
+                    int size = ChanneGrouplManager.getGroup(msg.getExtend()).size();
                     log.info("current client number 【{}】", size);
                     List<TaskDetail> list = JSON.parseArray(msg.getBody(), TaskDetail.class);
                     serverContext.addTask(msg.getExtend(), list);
                     /** 分配任务*/
-                    executor.beginJob(serverContext, channeGrouplManager);
+                    executor.beginJob(serverContext);
                     break;
                 case MessageProbuf.MessageType.CLOSE_VALUE:
                     ctx.close();
@@ -111,6 +110,11 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<MessagePro
                 case MessageProbuf.MessageType.HEALTH_VALUE:
                     log.info("client health packet");
                     ctx.channel().writeAndFlush(message);
+                    break;
+                case MessageProbuf.MessageType.RESULT_VALUE:
+                    TaskDetail taskDetail = JSON.parseObject(msg.getBody(), TaskDetail.class);
+                    taskDetail.setActionAdress(ctx.channel().remoteAddress().toString());
+                    RecordManage.getInstance().addRecord(taskDetail);
                     break;
                 default:
                     log.warn("don't support this message type");

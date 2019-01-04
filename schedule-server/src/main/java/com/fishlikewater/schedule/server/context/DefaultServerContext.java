@@ -1,6 +1,7 @@
 package com.fishlikewater.schedule.server.context;
 
 import com.fishlikewater.schedule.common.entity.TaskDetail;
+import com.fishlikewater.schedule.common.kit.TaskQueue;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,7 +52,33 @@ public class DefaultServerContext implements ServerContext{
     }
 
     @Override
-    public TaskDetail getTaskDetail() {
+    public List<TaskDetail> getTaskDetail() {
         return null;
+    }
+
+    /**
+     * 开启或关闭job
+     * @param appName
+     * @param num
+     * @param isUse
+     * @return
+     */
+    @Override
+    public boolean updateIsUse(String appName, int num, boolean isUse) {
+        List<TaskDetail> list = map.get(appName);
+        for (TaskDetail taskDetail : list) {
+            if (taskDetail.getSerialNumber() == num) {
+                if (taskDetail.isUse() != isUse) {
+                    taskDetail.setUse(isUse);
+                    TaskQueue.getQueue().remove(taskDetail);
+                    if(isUse){
+                        taskDetail.setNextTime(taskDetail.getCronSequenceGenerator().next(System.currentTimeMillis()));
+                        TaskQueue.getQueue().add(taskDetail);
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }

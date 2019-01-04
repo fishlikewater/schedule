@@ -23,5 +23,7 @@ public interface ServerContext {
 
     List<TaskDetail> getTaskList();
 
-    TaskDetail getTaskDetail();
+    List<TaskDetail> getTaskDetail();
+
+    boolean updateIsUse(String appName, int num, boolean isUse);
 }

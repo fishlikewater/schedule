@@ -9,6 +9,7 @@ import com.fishlikewater.schedule.server.manage.redis.RedisConfig;
 import com.lambdaworks.redis.api.async.RedisAsyncCommands;
 import io.netty.channel.Channel;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -26,21 +27,23 @@ public class ClusterScheduleExecutor implements Executor {
     private Thread thread;
 
     @Override
-    public void beginJob(ServerContext serverContext, ChanneGrouplManager channeGrouplManager) {
+    public void beginJob(ServerContext serverContext) {
         if (stat.get() == 0) {
             RedisAsyncCommands commands = RedisConfig.getInstance().getRedisAsyncCommands();
             thread = new Thread(()->{
                 while (true){
                     try {
-                        TaskDetail taskDetail = serverContext.getTaskDetail();
+                        List<TaskDetail> taskDetail = serverContext.getTaskDetail();
                         if(taskDetail != null){
-                            /** 发送到一个随机实例执行*/
-                            Channel channel = channeGrouplManager.getRandomChannel(taskDetail.getAppName());
-                            if(channel != null){
-                                channel.writeAndFlush(MessageProbuf.Message.newBuilder()
-                                        .setType(MessageProbuf.MessageType.EXCUTOR)
-                                        .setBody(JSON.toJSONString(taskDetail))
-                                        .build());
+                            for (TaskDetail detail : taskDetail) {
+                                /** 发送到一个随机实例执行*/
+                                Channel channel = ChanneGrouplManager.getRandomChannel(detail.getAppName());
+                                if(channel != null){
+                                    channel.writeAndFlush(MessageProbuf.Message.newBuilder()
+                                            .setType(MessageProbuf.MessageType.EXCUTOR)
+                                            .setBody(JSON.toJSONString(detail))
+                                            .build());
+                                }
                             }
                         }
                         Thread.sleep(1000l);

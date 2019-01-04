@@ -2,11 +2,13 @@ package com.fishlikewater.schedule.server.context;
 
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import com.fishlikewater.schedule.common.kit.CronSequenceGenerator;
+import com.fishlikewater.schedule.server.manage.ChanneGrouplManager;
 import com.fishlikewater.schedule.server.manage.redis.RedisConfig;
 import com.lambdaworks.redis.Range;
 import com.lambdaworks.redis.RedisFuture;
 import com.lambdaworks.redis.ScriptOutputType;
 import com.lambdaworks.redis.api.async.RedisAsyncCommands;
+import io.netty.channel.group.ChannelGroup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,18 +31,16 @@ public class RedisServerContext implements ServerContext{
 
     private RedisAsyncCommands<String, String> asyncCommands;
 
-    private String REDIS_QUEUE_KEY = "REDIS_QUEUE_KEY";
-
-    //private Map<Integer, CronSequenceGenerator> cornMap = new HashMap<>();
+    private static final String REDIS_QUEUE_KEY = "REDIS_QUEUE_KEY";
 
     /** 保存客户端提交的任务列表*/
     private Map<String, List<TaskDetail>> map = new ConcurrentHashMap<>();
 
-    private String[] LOCK_NAME = {"SCHEDULE_LOCK"};
+    private static final String[] LOCK_NAME = {"SCHEDULE_LOCK"};
 
-    private String SCRIPT_LOCK = "return redis.call('set',KEYS[1],ARGV[1],'NX','PX',ARGV[2])";
-    private String SCRIPT_UNLOCK = "if redis.call('get',KEYS[1]) == ARGV[1] then return tostring(redis.call('del', KEYS[1])==1) else return 'false' end";
-
+    private static final String SCRIPT_LOCK = "return redis.call('set',KEYS[1],ARGV[1],'NX','PX',ARGV[2])";
+    private static final String SCRIPT_UNLOCK = "if redis.call('get',KEYS[1]) == ARGV[1] then return tostring(redis.call('del', KEYS[1])==1) else return 'false' end";
+    private List<TaskDetail> cacheList = new ArrayList<>();
     /**
      * 添加任务到redis列表
      * @param appName 应用名称
@@ -57,74 +57,123 @@ public class RedisServerContext implements ServerContext{
             }
             map.put(appName, taskDetails);
         }
-        RedisFuture<List<String>> redisFuture = asyncCommands().zrange(appName, 0, -1);
-        redisFuture.thenAccept(list1 -> {
-            if(list!=null && list1.size() == list.size()){
-                log.info("task info had upload redis");
-            }else {
-                asyncCommands().zremrangebyrank(REDIS_QUEUE_KEY, 0, -1).thenAccept(l->{
-                    for (TaskDetail taskDetail : list) {
-                        CronSequenceGenerator generator = new CronSequenceGenerator(taskDetail.getCorn());
-                        taskDetail.setNextTime(generator.next(System.currentTimeMillis()));
-                        asyncCommands().zadd(REDIS_QUEUE_KEY, taskDetail.getNextTime(),taskDetail.getSerialNumber()+":"+appName);
-                    }
-                });
-            }
-        });
+        ChannelGroup group = ChanneGrouplManager.getGroup(appName);
+        if(group.size()<=0){
+            asyncCommands().zremrangebyrank(REDIS_QUEUE_KEY, 0, -1).thenAccept(l->{
+                for (TaskDetail taskDetail : list) {
+                    CronSequenceGenerator generator = new CronSequenceGenerator(taskDetail.getCorn());
+                    taskDetail.setNextTime(generator.next(System.currentTimeMillis()));
+                    asyncCommands().zadd(REDIS_QUEUE_KEY, taskDetail.getNextTime(),taskDetail.getSerialNumber()+":"+appName);
+                }
+            });
+        }
     }
 
     public List<TaskDetail> getTaskList(@NonNull String appName){
 
-        return null;
+        return map.get(appName);
 
     }
 
     public void updateTaskList(@NonNull String appName, List<TaskDetail> list){
-
+        List<TaskDetail> taskDetails = map.get(appName);
+        taskDetails.clear();
+        taskDetails.addAll(list);
     }
 
     @Override
     public List<TaskDetail> getTaskList() {
-
-        return null;
+        List<TaskDetail> list = new ArrayList<>();
+        for (Map.Entry<String, List<TaskDetail>> entry : map.entrySet()) {
+            list.addAll(entry.getValue());
+        }
+        return list;
     }
 
     /**
-     * 从redis里面获取一个任务(多服务端 通过分布式锁防止重复获取)
+     * 从redis里面获取任务(多服务端 通过分布式锁防止重复获取)
      * @return
      */
     @Override
-    public TaskDetail getTaskDetail() {
+    public List<TaskDetail> getTaskDetail() {
+        cacheList.clear();
         RedisFuture<List<String>> redisFuture = asyncCommands().zrangebyscore(REDIS_QUEUE_KEY, Range.create(0, System.currentTimeMillis()));
         try {
             /** 分布式锁*/
-            RedisFuture<Boolean> eval = asyncCommands().eval(SCRIPT_LOCK, ScriptOutputType.BOOLEAN, LOCK_NAME,  "1", "3000");
-            Boolean isLock = eval.get(2, TimeUnit.SECONDS);
+            RedisFuture<Boolean> eval = asyncCommands().eval(SCRIPT_LOCK, ScriptOutputType.BOOLEAN, LOCK_NAME,  "1", "5000");
+            Boolean isLock = eval.get(3, TimeUnit.SECONDS);
             if(isLock){
                 List<String> list = redisFuture.get(2, TimeUnit.SECONDS);
                 if(list != null && list.size()>0){
-                    String jobInfo = list.get(0);
-                    String[] split = jobInfo.split(":");
-                    int num = Integer.valueOf(split[0]);
-                    String appName = split[1];
-                    for(TaskDetail taskDetail:map.get(appName)){
-                        if(taskDetail.getSerialNumber() == num){
-                            asyncCommands().zrem(REDIS_QUEUE_KEY, jobInfo);
-                            long next = taskDetail.getCronSequenceGenerator().next(System.currentTimeMillis());
-                            taskDetail.setNextTime(next);
-                            asyncCommands().zadd(REDIS_QUEUE_KEY, next,jobInfo);
-                            return taskDetail;
+                    for (String jobInfo : list) {
+                        String[] split = jobInfo.split(":");
+                        int num = Integer.valueOf(split[0]);
+                        String appName = split[1];
+                        for(TaskDetail taskDetail:map.get(appName)){
+                            if(taskDetail.getSerialNumber() == num){
+                                asyncCommands().zrem(REDIS_QUEUE_KEY, jobInfo);
+                                if(taskDetail.isUse()){
+                                    long next = taskDetail.getCronSequenceGenerator().next(System.currentTimeMillis());
+                                    taskDetail.setNextTime(next);
+                                    asyncCommands().zadd(REDIS_QUEUE_KEY, next,jobInfo);
+                                    cacheList.add(taskDetail);
+                                }
+                                break;
+                            }
                         }
                     }
                 }
             }
+            return cacheList;
         } catch (Exception e) {
-            log.error("redis get value error", e);
+            log.error("redis get value timeout");
         }finally {
             /** 释放锁*/
             asyncCommands.eval(SCRIPT_UNLOCK, ScriptOutputType.BOOLEAN, LOCK_NAME,  "1");
         }
         return null;
+    }
+
+    /**
+     * 更新某个job 开启或关闭
+     * @param appName
+     * @param num
+     * @param isUse
+     * @return
+     */
+    @Override
+    public boolean updateIsUse(String appName, int num, boolean isUse) {
+        try {
+            /** 分布式锁*/
+            RedisFuture<Boolean> eval = asyncCommands().eval(SCRIPT_LOCK, ScriptOutputType.BOOLEAN, LOCK_NAME,  "1", "5000");
+            Boolean isLock = eval.get(3, TimeUnit.SECONDS);
+            if(isLock){
+                List<TaskDetail> list = map.get(appName);
+                for (TaskDetail taskDetail : list) {
+                    if(taskDetail.getSerialNumber() == num){
+                        if(taskDetail.isUse() != isUse){
+                            taskDetail.setUse(isUse);
+                            RedisFuture<Long> zrem = asyncCommands().zrem(REDIS_QUEUE_KEY, taskDetail.getSerialNumber() + ":" + appName);
+                            zrem.get();
+                            if(isUse){
+                                log.info("open task 【{}】【{}】", taskDetail.getAppName(), taskDetail.getDesc());
+                                asyncCommands().zadd(REDIS_QUEUE_KEY, taskDetail.getNextTime(),taskDetail.getSerialNumber()+":"+appName);
+                            }else{
+                                log.info("close task 【{}】【{}】", taskDetail.getAppName(), taskDetail.getDesc());
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }catch (Exception e){
+            log.error("redis get value timeout");
+        }finally {
+            /** 释放锁*/
+            asyncCommands.eval(SCRIPT_UNLOCK, ScriptOutputType.BOOLEAN, LOCK_NAME,  "1");
+        }
+
+        return true;
     }
 
     private RedisAsyncCommands<String, String> asyncCommands(){

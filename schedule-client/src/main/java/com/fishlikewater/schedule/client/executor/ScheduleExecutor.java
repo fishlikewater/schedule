@@ -1,10 +1,12 @@
 package com.fishlikewater.schedule.client.executor;
 
+import com.alibaba.fastjson.JSON;
 import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
-import com.fishlikewater.schedule.common.kit.TaskQueue;
 import com.fishlikewater.schedule.common.ScheduleJob;
+import com.fishlikewater.schedule.common.entity.MessageProbuf;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import com.fishlikewater.schedule.common.kit.NamedThreadFactory;
+import com.fishlikewater.schedule.common.kit.TaskQueue;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,12 +52,25 @@ public class ScheduleExecutor {
         ScheduleExecutor.executor.submit(() ->{
             try {
                 ScheduleJob scheduleJob = taskDetail.getScheduleJob();
+                taskDetail.setExecutorTime(System.currentTimeMillis());
                 scheduleJob.run();
                 /** 通知执行完成*/
-                //channel.writeAndFlush("");
+                taskDetail.setExecutorResult(true);
+                MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
+                        .setBody(JSON.toJSONString(taskDetail))
+                        .setType(MessageProbuf.MessageType.RESULT)
+                        .setExtend(ScheduleJobContext.getInstance().getAppName())
+                        .build();
+                channel.writeAndFlush(message);
             }catch (Exception e){
                 log.warn("excutor job 【{}】 fail", taskDetail.getDesc());
                 /** 通知执行失败*/
+                taskDetail.setExecutorResult(false);
+                MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
+                        .setBody(JSON.toJSONString(taskDetail))
+                        .setType(MessageProbuf.MessageType.RESULT)
+                        .setExtend(ScheduleJobContext.getInstance().getAppName())
+                        .build();
                 channel.writeAndFlush("");
             }
 
