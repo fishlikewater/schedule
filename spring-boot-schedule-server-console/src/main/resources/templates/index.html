@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="/layui/css/layui.css"/>
+</head>
+<body>
+<table class="layui-hide" id="record" lay-filter="record"></table>
+</body>
+<script src="/layui/layui.js"></script>
+<script>
+    ;!function () {
+        layui.use(['table', 'form'], function () {
+            var table = layui.table;
+            table.render({
+                elem: '#record'
+                , url: '/schedule/record'
+                , toolbar: true
+                , title: '执行记录表'
+                , cols: [[
+                    {field: 'appName', title: '所属应用', width: 100, edit: 'text', align: 'center'}
+                    , {field: 'serialNumber', title: '任务编号', width: 100, align: 'center'}
+                    , {field: 'corn', title: 'corn表达式', width: 150, align: 'center'}
+                    , {field: 'executorTime', title: '执行时间', width: 180, align: 'center', templet: function (d) {
+                            return formatDateTime(d.executorTime);
+                        }}
+                    , {
+                        field: 'executorResult', title: '执行结果', width: 120, align: 'center', templet: function (d) {
+                            if (d.executorResult) {
+                                return "成功";
+                            } else {
+                                return "失败";
+                            }
+                        }
+                    }
+                    , {field: 'desc', title: '任务描述', width: 150, align: 'center'}
+                ]]
+                , page: true
+                , response: {
+                    statusCode: 200 //重新规定成功的状态码为 200，table 组件默认为 0
+                }
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.message, //解析提示文本
+                        "count": res.data.count, //解析数据长度
+                        "data": res.data.item //解析数据列表
+                    };
+                }
+            });
+        });
+    }();
+
+    function formatDateTime(timeStamp) {
+        var date = new Date();
+        date.setTime(timeStamp);
+        var y = date.getFullYear();
+        var m = date.getMonth() + 1;
+        m = m < 10 ? ('0' + m) : m;
+        var d = date.getDate();
+        d = d < 10 ? ('0' + d) : d;
+        var h = date.getHours();
+        h = h < 10 ? ('0' + h) : h;
+        var minute = date.getMinutes();
+        var second = date.getSeconds();
+        minute = minute < 10 ? ('0' + minute) : minute;
+        second = second < 10 ? ('0' + second) : second;
+        return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second;
+    };
+</script>
+</html>

@@ -84,4 +84,16 @@ public class RecordManage {
         }
         return list;
     }
+
+    public long getRecordCount()throws Exception{
+        int size = 0;
+        RedisAsyncCommands<String, String> commands = RedisConfig.getInstance().getRedisAsyncCommands();
+        if(commands != null){
+            RedisFuture<Long> future = commands.llen(SCHEDULE_RECORD);
+            size = Math.toIntExact(future.get());
+        }else{
+            size = fifoCache.size();
+        }
+        return size;
+    }
 }

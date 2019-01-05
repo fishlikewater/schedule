@@ -3,6 +3,7 @@ package com.github.fishlikewater.spring.boot.schedule.server.console.config;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -22,7 +23,22 @@ import java.util.List;
  * @date 2019年01月04日 16:09
  **/
 @Configuration
+@Slf4j
 public class WebConfig implements WebMvcConfigurer {
+
+   /* *//**
+     * 添加静态资源文件，外部可以直接访问地址
+     * @param registry
+     *//*
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        //配置静态资源处理
+        log.info("--------------配置静态资源------------");
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("/webjars/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/");
+    }*/
 
     /**
      * 替换框架json为fastjson

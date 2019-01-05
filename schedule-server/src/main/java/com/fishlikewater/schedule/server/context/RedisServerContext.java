@@ -8,6 +8,7 @@ import com.lambdaworks.redis.Range;
 import com.lambdaworks.redis.RedisFuture;
 import com.lambdaworks.redis.ScriptOutputType;
 import com.lambdaworks.redis.api.async.RedisAsyncCommands;
+import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -174,6 +176,71 @@ public class RedisServerContext implements ServerContext{
         }
 
         return true;
+    }
+
+    /**
+     * 添加客户端缓存到redis
+     * @param appName
+     * @param channel
+     * @return
+     */
+    @Override
+    public boolean registerClient(String appName, Channel channel) {
+        asyncCommands().sadd(appName, channel.remoteAddress().toString());
+        return true;
+    }
+
+    /**
+     * 获取应用所有已注册的客户端
+     * @param appName
+     * @return
+     */
+    @Override
+    public Set<String> getAllClient(String appName) {
+        RedisFuture<Set<String>> future = asyncCommands().smembers(appName);
+        try {
+            Set<String> set = future.get(2, TimeUnit.SECONDS);
+            return set;
+        } catch (Exception e) {
+            log.error("get all client exception", e);
+        }
+        return null;
+    }
+
+    /**
+     * 删除redis中的客户端缓存
+     * @param channel
+     * @return
+     */
+    @Override
+    public boolean removeClient(Channel channel) {
+        for (Map.Entry<String, ChannelGroup> entry : ChanneGrouplManager.getGroupMap().entrySet()) {
+            boolean contains = entry.getValue().contains(channel);
+            if (contains){
+                asyncCommands().srem(entry.getKey(), channel.remoteAddress().toString());
+                break;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * 更新远程执行服务地址
+     * @param appName
+     * @param num
+     * @param actionAddress
+     * @return
+     */
+    @Override
+    public boolean updateActionAddress(String appName, int num, String actionAddress) {
+        List<TaskDetail> taskDetails = map.get(appName);
+        for (TaskDetail taskDetail : taskDetails) {
+            if(taskDetail.getSerialNumber() == num){
+                taskDetail.setActionAdress(actionAddress);
+                return true;
+            }
+        }
+        return false;
     }
 
     private RedisAsyncCommands<String, String> asyncCommands(){

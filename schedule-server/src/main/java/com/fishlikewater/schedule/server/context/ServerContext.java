@@ -1,9 +1,11 @@
 package com.fishlikewater.schedule.server.context;
 
 import com.fishlikewater.schedule.common.entity.TaskDetail;
+import io.netty.channel.Channel;
 import lombok.NonNull;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author zhangx
@@ -26,4 +28,12 @@ public interface ServerContext {
     List<TaskDetail> getTaskDetail();
 
     boolean updateIsUse(String appName, int num, boolean isUse);
+
+    boolean registerClient(String appName, Channel channel);
+
+    Set<String> getAllClient(String appName);
+
+    boolean removeClient(Channel channel);
+
+    boolean updateActionAddress(String appName, int num, String actionAddress);
 }

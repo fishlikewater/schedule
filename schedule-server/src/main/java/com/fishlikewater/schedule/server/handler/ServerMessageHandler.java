@@ -74,6 +74,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<MessagePro
      */
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+        serverContext.removeClient(ctx.channel());
         ChanneGrouplManager.removeChannel(ctx.channel());
     }
 
@@ -89,6 +90,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<MessagePro
             }
             log.info("valid successful");
             ChanneGrouplManager.addChannel(msg.getExtend(), ctx.channel());
+            serverContext.registerClient(msg.getExtend(), ctx.channel());
         } else {
             Channel channel = ChanneGrouplManager.getGroup(msg.getExtend()).find(ctx.channel().id());
             if (channel ==null){

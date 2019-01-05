@@ -7,6 +7,10 @@ import com.lambdaworks.redis.pubsub.StatefulRedisPubSubConnection;
 import com.lambdaworks.redis.pubsub.api.async.RedisPubSubAsyncCommands;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -132,5 +136,23 @@ public class AppTest
         Thread.sleep(5000);
 
 
+    }
+
+    @Test
+    public void testStream(){
+        Map<String, List<String>> map = new HashMap<>();
+        List<String> list1 = new ArrayList<>();
+        List<String> list2 = new ArrayList<>();
+        List<String> list3 = new ArrayList<>();
+        list1.add("s1");
+        list2.add("s2");
+        list3.add("s3");
+        map.put("list1", list1);
+        map.put("list2", list2);
+        map.put("list3", list3);
+
+        /*map.entrySet().stream().map(e->e.getValue()).flatMap(List::stream).forEach(t->{
+            System.out.println(t);
+        });*/
     }
 }

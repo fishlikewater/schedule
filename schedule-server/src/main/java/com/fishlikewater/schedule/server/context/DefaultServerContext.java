@@ -2,12 +2,13 @@ package com.fishlikewater.schedule.server.context;
 
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import com.fishlikewater.schedule.common.kit.TaskQueue;
+import com.fishlikewater.schedule.server.manage.ChanneGrouplManager;
+import io.netty.channel.Channel;
+import io.netty.channel.group.ChannelGroup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -79,6 +80,58 @@ public class DefaultServerContext implements ServerContext{
             }
         }
 
+        return false;
+    }
+
+    /**
+     * 单服务实例交给GroupChannel 管理
+     * @param channel
+     * @return
+     */
+    @Override
+    public boolean registerClient(String appName, Channel channel) {
+
+        return true;
+    }
+
+    @Override
+    public Set<String> getAllClient(String appName) {
+        ChannelGroup group = ChanneGrouplManager.getGroup(appName);
+        if(group != null){
+            Set<String> set = new HashSet<>();
+            for (Channel channel : group) {
+                set.add(channel.remoteAddress().toString());
+            }
+            return set;
+        }
+        return null;
+    }
+    /**
+     * 单服务实例交给GroupChannel 管理
+     * @param channel
+     * @return
+     */
+    @Override
+    public boolean removeClient(Channel channel) {
+        return true;
+    }
+
+    /**
+     * 更新远程执行服务地址
+     * @param appName
+     * @param num
+     * @param actionAddress
+     * @return
+     */
+    @Override
+    public boolean updateActionAddress(String appName, int num, String actionAddress) {
+        List<TaskDetail> taskDetails = map.get(appName);
+        for (TaskDetail taskDetail : taskDetails) {
+            if(taskDetail.getSerialNumber() == num){
+                taskDetail.setActionAdress(actionAddress);
+                return true;
+            }
+        }
         return false;
     }
 }

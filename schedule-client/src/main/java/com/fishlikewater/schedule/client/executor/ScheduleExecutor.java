@@ -5,6 +5,7 @@ import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
 import com.fishlikewater.schedule.common.ScheduleJob;
 import com.fishlikewater.schedule.common.entity.MessageProbuf;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
+import com.fishlikewater.schedule.common.kit.JsonFilter;
 import com.fishlikewater.schedule.common.kit.NamedThreadFactory;
 import com.fishlikewater.schedule.common.kit.TaskQueue;
 import io.netty.channel.Channel;
@@ -57,7 +58,7 @@ public class ScheduleExecutor {
                 /** 通知执行完成*/
                 taskDetail.setExecutorResult(true);
                 MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
-                        .setBody(JSON.toJSONString(taskDetail))
+                        .setBody(JSON.toJSONString(taskDetail, JsonFilter.sendServerResultFilter))
                         .setType(MessageProbuf.MessageType.RESULT)
                         .setExtend(ScheduleJobContext.getInstance().getAppName())
                         .build();
@@ -67,7 +68,7 @@ public class ScheduleExecutor {
                 /** 通知执行失败*/
                 taskDetail.setExecutorResult(false);
                 MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
-                        .setBody(JSON.toJSONString(taskDetail))
+                        .setBody(JSON.toJSONString(taskDetail, JsonFilter.sendServerResultFilter))
                         .setType(MessageProbuf.MessageType.RESULT)
                         .setExtend(ScheduleJobContext.getInstance().getAppName())
                         .build();

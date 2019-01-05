@@ -22,7 +22,7 @@ public class TaskDetail {
 
     private String corn;
 
-    @JSONField(serialize=false)
+    //@JSONField(serialize=false)
     private long nextTime;
 
     private String appName;
@@ -35,13 +35,12 @@ public class TaskDetail {
 
     private String desc;
 
-    @JSONField(serialize=false)
     private String actionAdress;
 
     private boolean executorResult;//执行结果
 
     private long executorTime;//执行时间
 
-    @JSONField(serialize=false)
+    //@JSONField(serialize=false)
     private boolean isUse = true;//是否使用
 }

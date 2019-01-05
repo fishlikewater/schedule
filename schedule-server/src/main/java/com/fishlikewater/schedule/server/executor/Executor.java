@@ -11,8 +11,13 @@ import com.fishlikewater.schedule.server.context.ServerContext;
  * @date 2019年01月02日 17:22
  **/
 public interface Executor {
+
     void beginJob(ServerContext serverContext);
 
+    /**
+     * 线程异常处理
+     * @param thread 线程
+     */
     default void reStartThred(Thread thread){
         if (thread.isAlive()) {
             boolean interrupted = thread.isInterrupted();

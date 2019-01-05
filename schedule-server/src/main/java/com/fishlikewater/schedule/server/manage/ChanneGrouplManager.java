@@ -1,6 +1,10 @@
 package com.fishlikewater.schedule.server.manage;
 
 import cn.hutool.core.util.RandomUtil;
+import com.alibaba.fastjson.JSON;
+import com.fishlikewater.schedule.common.entity.MessageProbuf;
+import com.fishlikewater.schedule.common.entity.TaskDetail;
+import com.fishlikewater.schedule.common.kit.JsonFilter;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -24,7 +28,7 @@ public class ChanneGrouplManager {
     private static Map<String, ChannelGroup> groupMap = new ConcurrentHashMap<>();
     /** 缓存channel*/
     public static boolean addChannel(@NonNull String appName, @NonNull Channel channel){
-        boolean isSuccess = false;
+        boolean isSuccess;
         ChannelGroup channels = groupMap.get(appName);
         if(channels == null){
             ChannelGroup group = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
@@ -51,6 +55,13 @@ public class ChanneGrouplManager {
 
     public static ChannelGroup getGroup(@NonNull String appName){return groupMap.get(appName);}
 
+    public static Map<String, ChannelGroup> getGroupMap(){return groupMap;}
+
+    /**
+     * 随机获取一个客户端
+     * @param appName
+     * @return
+     */
     public static Channel getRandomChannel(String appName) {
         ChannelGroup group = getGroup(appName);
         if(group.size()>0){
@@ -60,7 +71,28 @@ public class ChanneGrouplManager {
         }else{
             return null;
         }
+    }
 
+    /**
+     * 发送到指定的客户端
+     * @param taskDetail
+     * @return
+     */
+    public static boolean sendByAddress(TaskDetail taskDetail){
+        boolean isFound;
+        ChannelGroup group = ChanneGrouplManager.getGroup(taskDetail.getAppName());
+        isFound = false;
+        for (Channel channel : group) {
+            if(channel.remoteAddress().toString().equals(taskDetail.getActionAdress())){
+                isFound = true;
+                channel.writeAndFlush(MessageProbuf.Message.newBuilder()
+                        .setType(MessageProbuf.MessageType.EXCUTOR)
+                        .setBody(JSON.toJSONString(taskDetail, JsonFilter.sendClientFilter))
+                        .build());
+                break;
+            }
+        }
+        return isFound;
     }
 
 
