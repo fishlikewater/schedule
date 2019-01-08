@@ -14,19 +14,11 @@
     </a>
 </p>
 
-#### 更新
+#### 最新更新
+> 添加统一控制台(2019-01-08)
 
-> 添加统一控制台(2019-01-04)
+添加控制台web操作页面，页面模板采用kitadmin [kitadmin](https://gitee.com/kitteam/kit_admin)
 
-项目spring-boot-schedule-server-console为统一控制
-
-提供查询修改接口
-
-1. /schedule/all(GET) 获取所有的任务
-
-2. /schedule/record(GET) 获取所有已执行记录
-
-3. /schedule/status(POST) 开启或停止任务
 
 #### 介绍
 轻量的分布式任务调度框架。
@@ -113,3 +105,16 @@ schedule.client.health-beat=60 //心跳检测间隔 秒
 schedule.client.retry-interval=60 //断线重连间隔 秒
 schedule.client.server-address=127.0.0.1:8080,127.0.0.1:8081 //调度中心地址 配置改项时 host与port配置不生效
 ```
+#### 更新历史
+
+> 添加统一控制台(2019-01-04)
+
+项目spring-boot-schedule-server-console为统一控制
+
+提供查询修改接口
+
+1. /schedule/all(GET) 获取所有的任务
+
+2. /schedule/record(GET) 获取所有已执行记录
+
+3. /schedule/status(POST) 开启或停止任务
