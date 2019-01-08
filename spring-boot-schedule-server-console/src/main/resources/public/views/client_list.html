@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>客户端host列表</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/lib/kitadmin/css/layui.css" media="all">
+</head>
+<body>
+
+
+<div>
+    <table class="layui-hide" id="client_list" lay-filter="client_list"></table>
+</div>
+<script src="/lib/kitadmin/layui.js"></script>
+<script>
+    var table;
+    var params = GetRequest();
+    ;!function () {
+        layui.use(['table', 'form'], function () {
+            table = layui.table;
+            table.render({
+                elem: '#client_list'
+                , url: '/schedule/client/' + params["appName"]
+                , title: '客户端host列表'
+                , cols: [[
+                    {type: 'radio', align: 'center'},
+                    {field: 'appName', title: '应用名称', width: 100, align: 'center'},
+                    {field: 'host', title: 'host', width: 100, align: 'center'},
+                    {field: 'port', title: '当前端口', width: 100, align: 'center'}
+                ]]
+                , response: {
+                    statusCode: 200 //重新规定成功的状态码为 200，table 组件默认为 0
+                }
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.message, //解析提示文本
+                        "count": res.data.count, //解析数据长度
+                        "data": res.data //解析数据列表
+                    };
+                }
+            });
+        });
+    }();
+
+    function setClient() {
+        var checkStatus = table.checkStatus('client_list');
+        if(checkStatus.data.length == 0){
+            layer.msg("请选择一条数据", {icon:2})
+            return false;
+        }else{
+            let para = {"appName": params["appName"], "num": params["serialNumber"], "actionAddress": checkStatus.data[0].host};
+            return para;
+        }
+    }
+
+    function GetRequest() {
+        var url = location.search; //获取url中"?"符后的字串
+        var theRequest = new Object();
+        if (url.indexOf("?") != -1) {
+            var str = url.substr(1);
+            strs = str.split("&");
+            for (var i = 0; i < strs.length; i++) {
+                theRequest[strs[i].split("=")[0]] = unescape(strs[i].split("=")[1]);
+            }
+        }
+        return theRequest;
+    }
+</script>
+</body>
+</html>

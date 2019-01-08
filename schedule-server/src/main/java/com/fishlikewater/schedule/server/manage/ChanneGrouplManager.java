@@ -11,6 +11,7 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.NonNull;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -83,7 +84,8 @@ public class ChanneGrouplManager {
         ChannelGroup group = ChanneGrouplManager.getGroup(taskDetail.getAppName());
         isFound = false;
         for (Channel channel : group) {
-            if(channel.remoteAddress().toString().equals(taskDetail.getActionAdress())){
+            InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
+            if(remoteAddress.getHostString().equals(taskDetail.getActionAdress())){
                 isFound = true;
                 channel.writeAndFlush(MessageProbuf.Message.newBuilder()
                         .setType(MessageProbuf.MessageType.EXCUTOR)

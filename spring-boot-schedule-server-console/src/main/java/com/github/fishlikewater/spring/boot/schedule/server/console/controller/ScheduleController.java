@@ -13,10 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -35,7 +32,7 @@ public class ScheduleController extends BaseRest {
 
     @GetMapping("recode_page")
     public ModelAndView recordPage(ModelAndView mv){
-        mv.setViewName("index");
+        mv.setViewName("record");
         return mv;
 
     }
@@ -47,8 +44,10 @@ public class ScheduleController extends BaseRest {
     @GetMapping("all")
     public ResponseEntity getAllJob(){
         List<TaskDetail> taskList = ServerStart.build().getServerContext().getTaskList();
-
-        return sendSuccess(taskList);
+        Map<String, Object> returnMap = new HashMap<>();
+        returnMap.put("count", taskList.size());
+        returnMap.put("item", taskList);
+        return sendSuccess(returnMap);
     }
 
     /**
@@ -107,9 +106,19 @@ public class ScheduleController extends BaseRest {
      */
     @GetMapping("client/{appName}")
     public ResponseEntity getAllRemoteClient(@PathVariable String appName){
+        List returnList = new ArrayList();
         ServerContext serverContext = ServerStart.build().getServerContext();
         Set<String> allClient = serverContext.getAllClient(appName);
-        return sendSuccess(allClient);
+        for (String s : allClient) {
+            Map<String, String> map = new HashMap<>();
+            String[] split = s.split(":");
+            String host = split[0].replaceAll("//", "");
+            map.put("appName", appName);
+            map.put("host", host);
+            map.put("port", split[1]);
+            returnList.add(map);
+        }
+        return sendSuccess(returnList);
     }
 
 }

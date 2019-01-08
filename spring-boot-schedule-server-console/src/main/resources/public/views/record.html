@@ -1,20 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-    <link rel="stylesheet" href="/layui/css/layui.css"/>
-</head>
-<body>
-<table class="layui-hide" id="record" lay-filter="record"></table>
-</body>
-<script src="/layui/layui.js"></script>
+<div>
+    <table class="layui-hide" id="record_page" lay-filter="record_page"></table>
+</div>
 <script>
     ;!function () {
         layui.use(['table', 'form'], function () {
             var table = layui.table;
             table.render({
-                elem: '#record'
+                elem: '#record_page'
                 , url: '/schedule/record'
                 , toolbar: true
                 , title: '执行记录表'
@@ -22,6 +14,7 @@
                     {field: 'appName', title: '所属应用', width: 100, edit: 'text', align: 'center'}
                     , {field: 'serialNumber', title: '任务编号', width: 100, align: 'center'}
                     , {field: 'corn', title: 'corn表达式', width: 150, align: 'center'}
+                    , {field: 'actionAdress', title: '执行实例', width: 150, align: 'center'}
                     , {field: 'executorTime', title: '执行时间', width: 180, align: 'center', templet: function (d) {
                             return formatDateTime(d.executorTime);
                         }}
@@ -69,4 +62,3 @@
         return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second;
     };
 </script>
-</html>

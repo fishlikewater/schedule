@@ -1,0 +1,108 @@
+<div>
+    <table class="layui-hide" id="job_list" lay-filter="job_list"></table>
+</div>
+<script>
+    ;!function () {
+        layui.use(['table', 'form', 'axios'], function () {
+            var table = layui.table;
+            var form = layui.form;
+            var axios = layui.axios;
+            table.render({
+                elem: '#job_list'
+                , url: '/schedule/all'
+                , toolbar: true
+                , title: '任务列表'
+                , cols: [[
+                    {field: 'appName', title: '所属应用', width: 100, edit: 'text', align: 'center'}
+                    , {field: 'serialNumber', title: '任务编号', width: 100, align: 'center'}
+                    , {field: 'corn', title: 'corn表达式', width: 150, align: 'center'}
+                    , {title: '执行实例', width: 150, align: 'center',templet: function (d){
+                            return d.actionAdress == ''?"随机":d.actionAdress;
+                        }}
+                    , {
+                        field: 'nextTime', title: '下次执行时间', width: 180, align: 'center', templet: function (d) {
+                            return formatDateTime(d.nextTime);
+                        }
+                    }
+                    , {field: 'desc', title: '任务描述', width: 150, align: 'center'}
+                    , {
+                        field: 'use', title: '任务状态', width: 150, align: 'center', templet: function (d) {
+                            return d.use ? '开启' : '关闭';
+                        }
+                    }
+                    , {title: '任务开关', width: 150, align: 'center', toolbar: '#isOpen'}
+                    , {title: '选择实例', width: 150, align: 'center', toolbar: '#selectClient'}
+                ]]
+                , page: true
+                , response: {
+                    statusCode: 200 //重新规定成功的状态码为 200，table 组件默认为 0
+                }
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.message, //解析提示文本
+                        "count": res.data.count, //解析数据长度
+                        "data": res.data.item //解析数据列表
+                    };
+                }
+            });
+
+            table.on("tool(job_list)", function (obj) {
+                var data = obj.data;
+                layer.open({
+                    type: 2,
+                    title: '选择实例',
+                    shadeClose: true,
+                    shade: false,
+                    maxmin: true, //开启最大化最小化按钮
+                    area: ['600px', '300px'],
+                    btn:['确认', '取消'],
+                    'yes':function(index, layero){
+                        var iframeWin = window[layero.find('iframe')[0]['name']];
+                        let param = iframeWin.setClient();
+                        axios.post(`/schedule/action`, param)
+                            .then(res => {
+                                layer.msg(res.data.message, {icon:1})
+                                layer.close(index)
+                                table.reload('job_list')
+                            })
+                    },
+                    content:  "/views/client_list.html?appName="+data.appName + "&serialNumber="+data.serialNumber
+                });
+            });
+            form.on('switch(switchTask)', function (data) {
+                let params = {"appName": this.name, "num": this.value, "isUse": data.elem.checked};
+                axios.post(`/schedule/status`, params)
+                    .then(res => {
+                        layer.tips(res.data.message, data.othis)
+                        table.reload('job_list')
+                    })
+            })
+        });
+    }();
+
+    function formatDateTime(timeStamp) {
+        var date = new Date();
+        date.setTime(timeStamp);
+        var y = date.getFullYear();
+        var m = date.getMonth() + 1;
+        m = m < 10 ? ('0' + m) : m;
+        var d = date.getDate();
+        d = d < 10 ? ('0' + d) : d;
+        var h = date.getHours();
+        h = h < 10 ? ('0' + h) : h;
+        var minute = date.getMinutes();
+        var second = date.getSeconds();
+        minute = minute < 10 ? ('0' + minute) : minute;
+        second = second < 10 ? ('0' + second) : second;
+        return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second;
+    };
+</script>
+
+<script type="text/html" id="selectClient">
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="select">实例</a>
+</script>
+<script type="text/html" id="isOpen">
+    <input type="checkbox" lay-event="switch" value="{{d.serialNumber}}" name="{{d.appName}}" lay-filter="switchTask"
+           lay-skin="switch" lay-text="ON|OFF" {{ d.use==true?"checked":''}}>
+</script>

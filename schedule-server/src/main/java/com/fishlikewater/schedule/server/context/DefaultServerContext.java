@@ -8,6 +8,7 @@ import io.netty.channel.group.ChannelGroup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -80,7 +81,7 @@ public class DefaultServerContext implements ServerContext{
             }
         }
 
-        return false;
+        return true;
     }
 
     /**
@@ -100,7 +101,8 @@ public class DefaultServerContext implements ServerContext{
         if(group != null){
             Set<String> set = new HashSet<>();
             for (Channel channel : group) {
-                set.add(channel.remoteAddress().toString());
+                InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
+                set.add(remoteAddress.getHostString()+":"+remoteAddress.getPort());
             }
             return set;
         }

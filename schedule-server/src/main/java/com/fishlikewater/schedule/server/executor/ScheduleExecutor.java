@@ -66,8 +66,6 @@ public class ScheduleExecutor implements Executor{
                     while (true) {
                         try {
                             long curTimeMillis = System.currentTimeMillis();
-                            /** 从队列中取出任务 放到线程池中去 执行*/
-                            //TaskDetail taskDetail = TaskQueue.peek();
                             taskList.stream().filter(t -> t.isUse() && t.getNextTime() <= curTimeMillis).forEach(t->{
                                 if(StringUtil.isNullOrEmpty(t.getActionAdress())){
                                     /** 发送到一个随机实例执行*/

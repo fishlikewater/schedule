@@ -13,6 +13,7 @@ import io.netty.channel.group.ChannelGroup;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -186,7 +187,8 @@ public class RedisServerContext implements ServerContext{
      */
     @Override
     public boolean registerClient(String appName, Channel channel) {
-        asyncCommands().sadd(appName, channel.remoteAddress().toString());
+        InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
+        asyncCommands().sadd(appName, remoteAddress.getHostString().toString());
         return true;
     }
 
@@ -217,7 +219,8 @@ public class RedisServerContext implements ServerContext{
         for (Map.Entry<String, ChannelGroup> entry : ChanneGrouplManager.getGroupMap().entrySet()) {
             boolean contains = entry.getValue().contains(channel);
             if (contains){
-                asyncCommands().srem(entry.getKey(), channel.remoteAddress().toString());
+                InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
+                asyncCommands().srem(entry.getKey(), remoteAddress.getHostString().toString());
                 break;
             }
         }
