@@ -43,15 +43,19 @@
  </dependency>        
    ```
   
-> 分配中心
-```
-<dependency>
-     <groupId>com.github.fishlikewater</groupId>
-     <artifactId>spring-boot-schedule-server-stater</artifactId>
-     <version>0.0.1.RELEASE</version>
- </dependency>        
-   ```
+> 控制台
 
+启动spring-boot-schedule-server-console项目
+
+#### 操作
+
+1.执行记录
+
+![Image text](pic/recod.png)
+
+2.任务列表及更新任务信息
+![Image text](https://gitee.com/fishlikewater/schedule/pic/job.png)
+![Image text](pic/select.png)
 
 #### 使用
 
