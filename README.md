@@ -54,7 +54,7 @@
 ![Image text](pic/recod.png)
 
 2.任务列表及更新任务信息
-![Image text](https://gitee.com/fishlikewater/schedule/pic/job.png)
+![Image text](pic/job.png)
 ![Image text](pic/select.png)
 
 #### 使用
