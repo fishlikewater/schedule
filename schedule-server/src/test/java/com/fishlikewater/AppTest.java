@@ -1,19 +1,20 @@
 package com.fishlikewater;
 
+import com.fishlikewater.schedule.common.entity.TaskDetail;
+import com.fishlikewater.schedule.server.manage.sqlite.Sql2oConfig;
 import com.lambdaworks.redis.*;
 import com.lambdaworks.redis.api.async.RedisAsyncCommands;
 import com.lambdaworks.redis.pubsub.RedisPubSubListener;
 import com.lambdaworks.redis.pubsub.StatefulRedisPubSubConnection;
 import com.lambdaworks.redis.pubsub.api.async.RedisPubSubAsyncCommands;
 import org.junit.Test;
+import org.sql2o.Connection;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertTrue;
 
@@ -150,9 +151,60 @@ public class AppTest
         map.put("list1", list1);
         map.put("list2", list2);
         map.put("list3", list3);
-
-        /*map.entrySet().stream().map(e->e.getValue()).flatMap(List::stream).forEach(t->{
+        map.entrySet().stream().map(e->e.getValue()).flatMap(List::stream).forEach(t->{
             System.out.println(t);
-        });*/
+        });
+    }
+
+    @Test
+    public void testLimit(){
+        List<TaskDetail> list1 = new ArrayList<>();
+        TaskDetail t1 = new TaskDetail();
+        t1.setNextTime(1);
+        TaskDetail t2 = new TaskDetail();
+        t2.setNextTime(2);
+        TaskDetail t3 = new TaskDetail();
+        t3.setNextTime(3);
+        list1.add(t1);
+        list1.add(t2);
+        list1.add(t3);
+        List<TaskDetail> list = new ArrayList<>();
+        list.addAll(list1);
+        Stream<TaskDetail> stream = list.stream();
+        stream = stream.sorted();
+
+        stream.forEach(t->{
+            if(t.getNextTime() > 2){
+
+            }
+            System.out.println(t.getNextTime());
+        });
+    }
+
+    @Test
+    public void testSql2o(){
+        Sql2oConfig.open("jdbc:sqlite:schedule-server.db", null, null);
+        Connection connection = Sql2oConfig.sql2o.open();
+        List<TaskDetail> list = connection.createQuery("select * from task_list")
+                .addColumnMapping("descriple" ,"desc")
+                .executeAndFetch(TaskDetail.class);
+        System.out.println(list);
+    }
+
+    @Test
+    public void testSql2o1(){
+        Sql2oConfig.open("jdbc:sqlite:schedule-server.db", null, null);
+        List<TaskDetail> list = new ArrayList<>();
+        TaskDetail t1 = new TaskDetail();
+        t1.setSerialNumber(222);
+        t1.setAppName("sample");
+        TaskDetail t2 = new TaskDetail();
+        t2.setSerialNumber(3333);
+        t2.setAppName("sample");
+        list.add(t1);
+        list.add(t2);
+        Sql2oConfig.resetTaskWithDB(list, "sample");
+        t1.setCorn("11");
+        Sql2oConfig.updateTask(t1);
     }
 }

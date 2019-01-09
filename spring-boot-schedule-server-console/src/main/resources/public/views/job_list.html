@@ -2,11 +2,13 @@
     <table class="layui-hide" id="job_list" lay-filter="job_list"></table>
 </div>
 <script>
+    var theRequest;
     ;!function () {
-        layui.use(['table', 'form', 'axios'], function () {
+        layui.use(['table', 'form', 'axios', 'utils'], function () {
             var table = layui.table;
             var form = layui.form;
             var axios = layui.axios;
+            var utils = layui.utils;
             table.render({
                 elem: '#job_list'
                 , url: '/schedule/all'
@@ -16,9 +18,11 @@
                     {field: 'appName', title: '所属应用', width: 100, edit: 'text', align: 'center'}
                     , {field: 'serialNumber', title: '任务编号', width: 100, align: 'center'}
                     , {field: 'corn', title: 'corn表达式', width: 150, align: 'center'}
-                    , {title: '执行实例', width: 150, align: 'center',templet: function (d){
-                            return d.actionAdress == ''?"随机":d.actionAdress;
-                        }}
+                    , {
+                        title: '执行实例', width: 150, align: 'center', templet: function (d) {
+                            return d.actionAdress == '' ? "随机" : d.actionAdress;
+                        }
+                    }
                     , {
                         field: 'nextTime', title: '下次执行时间', width: 180, align: 'center', templet: function (d) {
                             return formatDateTime(d.nextTime);
@@ -48,27 +52,32 @@
             });
 
             table.on("tool(job_list)", function (obj) {
-                var data = obj.data;
-                layer.open({
-                    type: 2,
-                    title: '选择实例',
-                    shadeClose: true,
-                    shade: false,
-                    maxmin: true, //开启最大化最小化按钮
-                    area: ['600px', '300px'],
-                    btn:['确认', '取消'],
-                    'yes':function(index, layero){
-                        var iframeWin = window[layero.find('iframe')[0]['name']];
-                        let param = iframeWin.setClient();
-                        axios.post(`/schedule/action`, param)
-                            .then(res => {
-                                layer.msg(res.data.message, {icon:1})
-                                layer.close(index)
-                                table.reload('job_list')
-                            })
-                    },
-                    content:  "/views/client_list.html?appName="+data.appName + "&serialNumber="+data.serialNumber
+                var checkData = obj.data;
+                theRequest = new Object();
+                theRequest['appName'] = checkData.appName;
+                theRequest['serialNumber'] = checkData.serialNumber;
+                utils.tplLoader("/views/client_list.html", function (data) {
+                    layer.open({
+                        type: 1,
+                        title: '选择实例',
+                        shadeClose: true,
+                        shade: false,
+                        maxmin: true, //开启最大化最小化按钮
+                        area: ['600px', '300px'],
+                        btn: ['确认', '取消'],
+                        'yes': function (index, layero) {
+                            let param = setClient();
+                            axios.post(`/schedule/action`, param)
+                                .then(res => {
+                                    layer.msg(res.data.message, {icon: 1})
+                                    layer.close(index)
+                                    table.reload('job_list')
+                                })
+                        },
+                        content: data
+                    });
                 });
+
             });
             form.on('switch(switchTask)', function (data) {
                 let params = {"appName": this.name, "num": this.value, "isUse": data.elem.checked};
@@ -76,7 +85,11 @@
                     .then(res => {
                         layer.tips(res.data.message, data.othis)
                         table.reload('job_list')
-                    })
+                    }).catch(res => {
+                        console.log(res)
+                    layer.tips(res.message, data.othis)
+                    table.reload('job_list')
+                })
             })
         });
     }();

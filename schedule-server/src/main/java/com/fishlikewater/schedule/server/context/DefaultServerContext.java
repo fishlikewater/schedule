@@ -1,8 +1,8 @@
 package com.fishlikewater.schedule.server.context;
 
 import com.fishlikewater.schedule.common.entity.TaskDetail;
-import com.fishlikewater.schedule.common.kit.TaskQueue;
 import com.fishlikewater.schedule.server.manage.ChanneGrouplManager;
+import com.fishlikewater.schedule.server.manage.sqlite.Sql2oConfig;
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;
 import lombok.NonNull;
@@ -26,18 +26,37 @@ public class DefaultServerContext implements ServerContext{
     /** 保存客户端提交的任务列表*/
     private Map<String, List<TaskDetail>> map = new ConcurrentHashMap<>();
 
+    private boolean isSync = true;
+
     public void addTask(String appName, List<TaskDetail> list){
         List<TaskDetail> taskDetails = map.get(appName);
         if(taskDetails == null){
+            List<TaskDetail> taskWithDB = Sql2oConfig.getTaskWithDB(appName);
+            for (TaskDetail taskDetail : list) {
+                int serialNumber = taskDetail.getSerialNumber();
+                for (TaskDetail detail : taskWithDB) {
+                    if(serialNumber == detail.getSerialNumber()){
+                        taskDetail.setUse(detail.isUse());
+                        taskDetail.setCorn(detail.getCorn());
+                        taskDetail.setActionAdress(detail.getActionAdress());
+                        break;
+                    }
+                }
+            }
             map.put(appName, list);
+            Sql2oConfig.resetTaskWithDB(list, appName);
         }
     }
 
     public List<TaskDetail> getTaskList(@NonNull String appName){
-
-        return map.get(appName);
+        List<TaskDetail> list = map.get(appName);
+        if(list == null || list.size() == 0){
+            list = Sql2oConfig.getTaskWithDB(appName);
+        }
+        return list;
     }
 
+    @Deprecated
     public void updateTaskList(@NonNull String appName, List<TaskDetail> list){
         List<TaskDetail> taskDetails = map.get(appName);
         taskDetails.clear();
@@ -49,6 +68,9 @@ public class DefaultServerContext implements ServerContext{
         List<TaskDetail> list = new ArrayList<>();
         for (Map.Entry<String, List<TaskDetail>> entry : map.entrySet()) {
             list.addAll(entry.getValue());
+        }
+        if(list.size() == 0){
+            list = Sql2oConfig.getTaskWithDB();
         }
         return list;
     }
@@ -68,17 +90,17 @@ public class DefaultServerContext implements ServerContext{
     @Override
     public boolean updateIsUse(String appName, int num, boolean isUse) {
         List<TaskDetail> list = map.get(appName);
-        for (TaskDetail taskDetail : list) {
-            if (taskDetail.getSerialNumber() == num) {
-                if (taskDetail.isUse() != isUse) {
-                    taskDetail.setUse(isUse);
-                    TaskQueue.getQueue().remove(taskDetail);
-                    if(isUse){
-                        taskDetail.setNextTime(taskDetail.getCronSequenceGenerator().next(System.currentTimeMillis()));
-                        TaskQueue.getQueue().add(taskDetail);
+        if(list != null){
+            for (TaskDetail taskDetail : list) {
+                if (taskDetail.getSerialNumber() == num) {
+                    if (taskDetail.isUse() != isUse) {
+                        taskDetail.setUse(isUse);
+                        Sql2oConfig.updateTask(taskDetail);
                     }
                 }
             }
+        }else{
+            return false;
         }
 
         return true;
@@ -95,6 +117,11 @@ public class DefaultServerContext implements ServerContext{
         return true;
     }
 
+    /**
+     * 获取所有的客户端
+     * @param appName
+     * @return
+     */
     @Override
     public Set<String> getAllClient(String appName) {
         ChannelGroup group = ChanneGrouplManager.getGroup(appName);
@@ -131,9 +158,15 @@ public class DefaultServerContext implements ServerContext{
         for (TaskDetail taskDetail : taskDetails) {
             if(taskDetail.getSerialNumber() == num){
                 taskDetail.setActionAdress(actionAddress);
+                Sql2oConfig.updateTask(taskDetail);
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean isSync() {
+        return isSync;
     }
 }

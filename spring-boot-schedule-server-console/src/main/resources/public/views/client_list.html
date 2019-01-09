@@ -1,23 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>客户端host列表</title>
-    <meta name="renderer" content="webkit">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link rel="stylesheet" href="/lib/kitadmin/css/layui.css" media="all">
-</head>
-<body>
-
-
 <div>
     <table class="layui-hide" id="client_list" lay-filter="client_list"></table>
 </div>
-<script src="/lib/kitadmin/layui.js"></script>
 <script>
     var table;
-    var params = GetRequest();
+    var params = theRequest;
+    console.log(params)
     ;!function () {
         layui.use(['table', 'form'], function () {
             table = layui.table;
@@ -70,5 +57,3 @@
         return theRequest;
     }
 </script>
-</body>
-</html>

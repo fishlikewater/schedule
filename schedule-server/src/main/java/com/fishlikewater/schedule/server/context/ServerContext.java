@@ -36,4 +36,6 @@ public interface ServerContext {
     boolean removeClient(Channel channel);
 
     boolean updateActionAddress(String appName, int num, String actionAddress);
+
+    boolean isSync();
 }

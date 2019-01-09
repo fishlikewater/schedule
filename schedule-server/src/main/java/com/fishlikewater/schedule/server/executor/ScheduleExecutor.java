@@ -13,6 +13,7 @@ import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -24,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2018年12月26日 14:32
  **/
 @Slf4j
-public class ScheduleExecutor implements Executor{
+public class ScheduleExecutor implements Executor {
 
     private AtomicInteger stat = new AtomicInteger(0);
 
@@ -66,24 +67,46 @@ public class ScheduleExecutor implements Executor{
                     while (true) {
                         try {
                             long curTimeMillis = System.currentTimeMillis();
-                            taskList.stream().filter(t -> t.isUse() && t.getNextTime() <= curTimeMillis).forEach(t->{
-                                if(StringUtil.isNullOrEmpty(t.getActionAdress())){
-                                    /** 发送到一个随机实例执行*/
-                                    Channel channel = ChanneGrouplManager.getRandomChannel(t.getAppName());
-                                    channel.writeAndFlush(MessageProbuf.Message.newBuilder()
-                                            .setType(MessageProbuf.MessageType.EXCUTOR)
-                                            .setBody(JSON.toJSONString(t, JsonFilter.sendClientFilter))
-                                            .build());
-                                }else{
-                                    boolean isFound = ChanneGrouplManager.sendByAddress(t);
-                                    if (!isFound){
-                                        log.warn("not found address:{}", t.getActionAdress());
-                                    }
+                            taskList.stream()
+                                    .sorted()
+                                    .limit(50)
+                                    .filter(t -> t.isUse() && t.getNextTime() <= curTimeMillis)
+                                    .forEach(t -> {
+                                        if (StringUtil.isNullOrEmpty(t.getActionAdress())) { //是否指定执行job的实例
+                                            /** 发送到一个随机实例执行*/
+                                            Channel channel = ChanneGrouplManager.getRandomChannel(t.getAppName());
+                                            if(channel != null){
+                                                channel.writeAndFlush(MessageProbuf.Message.newBuilder()
+                                                        .setType(MessageProbuf.MessageType.EXCUTOR)
+                                                        .setBody(JSON.toJSONString(t, JsonFilter.sendClientFilter))
+                                                        .build());
+                                            }else{
+                                                log.warn("not found client connection");
+                                            }
+                                        } else {
+                                            boolean isFound = ChanneGrouplManager.sendByAddress(t);
+                                            if (!isFound) {
+                                                log.warn("not found address:{}", t.getActionAdress());
+                                            }
+                                        }
+                                        long next = t.getCronSequenceGenerator().next(System.currentTimeMillis());
+                                        t.setNextTime(next);
+                                    });
+                            /** 优化线程睡眠机制，若长时间无任务，避免频繁循环刷新*/
+                            Optional<TaskDetail> first = taskList.stream().sorted().findFirst();
+                            if(first.isPresent()){
+                                long timeMillis = System.currentTimeMillis();
+                                long nextTime = first.get().getNextTime();
+                                if ((nextTime-timeMillis) >5*60*1000){ //长时间无job 保证5分钟刷一次
+                                    Thread.sleep(5*60*1000l);
+                                }else if ((nextTime-timeMillis) > 1000 && (nextTime-timeMillis)<=5*60*1000){
+                                    Thread.sleep(nextTime-timeMillis);
+                                }else {
+                                    Thread.sleep(1000l);
                                 }
-                                long next = t.getCronSequenceGenerator().next(System.currentTimeMillis());
-                                t.setNextTime(next);
-                            });
-                            Thread.sleep(1000l);
+                            }else {
+                                Thread.sleep(5*60*1000);//任务为空的时候线程5分钟刷一次
+                            }
                         } catch (Exception e) {
                             reStartThred(thread);
                         }

@@ -1,6 +1,7 @@
 package com.fishlikewater.spring.boot.schedule.server.config;
 
 import com.fishlikewater.schedule.server.boot.ServerStart;
+import com.fishlikewater.schedule.server.manage.sqlite.Sql2oConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -32,6 +33,7 @@ public class ScheduleServerConfiguration {
 
     @EventListener
     public void deployScheduleClient(ApplicationReadyEvent event){
+        Sql2oConfig.open("jdbc:sqlite:schedule-server.db", null, null);
         ServerStart.build().run(scheduleServerProperties.getServerPort(), scheduleServerProperties.getServerAddress());
     }
 }

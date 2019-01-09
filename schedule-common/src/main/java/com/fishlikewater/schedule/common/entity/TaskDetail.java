@@ -16,7 +16,7 @@ import lombok.experimental.Accessors;
  **/
 @Data
 @Accessors(chain = true)
-public class TaskDetail {
+public class TaskDetail implements Comparable<TaskDetail>{
 
     private int serialNumber;
 
@@ -43,4 +43,9 @@ public class TaskDetail {
 
     //@JSONField(serialize=false)
     private boolean isUse = true;//是否使用
+
+    @Override
+    public int compareTo(TaskDetail o) {
+        return (int) (this.getNextTime()-o.getNextTime());
+    }
 }

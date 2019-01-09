@@ -80,6 +80,9 @@ public class ScheduleController extends BaseRest {
     public ResponseEntity updataStatus(@Validated @RequestBody ScheduleStatusBody scheduleStatusBody){
         boolean updateIsUse = ServerStart.build().getServerContext().updateIsUse(scheduleStatusBody.getAppName(),
                 scheduleStatusBody.getNum(), scheduleStatusBody.isUse());
+        if(!updateIsUse){
+            return sendSuccess("无连接客户端，请连接后修改");
+        }
         return sendSuccess(updateIsUse);
     }
 
@@ -109,6 +112,9 @@ public class ScheduleController extends BaseRest {
         List returnList = new ArrayList();
         ServerContext serverContext = ServerStart.build().getServerContext();
         Set<String> allClient = serverContext.getAllClient(appName);
+        if(allClient == null){
+            return sendSuccess(returnList,"无客户端连接");
+        }
         for (String s : allClient) {
             Map<String, String> map = new HashMap<>();
             String[] split = s.split(":");
