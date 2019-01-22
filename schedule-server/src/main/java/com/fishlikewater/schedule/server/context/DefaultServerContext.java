@@ -26,6 +26,8 @@ public class DefaultServerContext implements ServerContext{
     /** 保存客户端提交的任务列表*/
     private Map<String, List<TaskDetail>> map = new ConcurrentHashMap<>();
 
+    private List<TaskDetail> list = new ArrayList<>();//所有任务
+
     private boolean isSync = true;
 
     public void addTask(String appName, List<TaskDetail> list){
@@ -44,6 +46,7 @@ public class DefaultServerContext implements ServerContext{
                 }
             }
             map.put(appName, list);
+            this.list.clear(); //有新的任务 清空缓存数据
             Sql2oConfig.resetTaskWithDB(list, appName);
         }
     }
@@ -65,12 +68,13 @@ public class DefaultServerContext implements ServerContext{
 
     @Override
     public List<TaskDetail> getTaskList() {
-        List<TaskDetail> list = new ArrayList<>();
-        for (Map.Entry<String, List<TaskDetail>> entry : map.entrySet()) {
-            list.addAll(entry.getValue());
-        }
         if(list.size() == 0){
-            list = Sql2oConfig.getTaskWithDB();
+            for (Map.Entry<String, List<TaskDetail>> entry : map.entrySet()) {
+                list.addAll(entry.getValue());
+            }
+            if(list.size() == 0){
+                list = Sql2oConfig.getTaskWithDB();
+            }
         }
         return list;
     }
@@ -107,17 +111,6 @@ public class DefaultServerContext implements ServerContext{
     }
 
     /**
-     * 单服务实例交给GroupChannel 管理
-     * @param channel
-     * @return
-     */
-    @Override
-    public boolean registerClient(String appName, Channel channel) {
-
-        return true;
-    }
-
-    /**
      * 获取所有的客户端
      * @param appName
      * @return
@@ -134,15 +127,6 @@ public class DefaultServerContext implements ServerContext{
             return set;
         }
         return null;
-    }
-    /**
-     * 单服务实例交给GroupChannel 管理
-     * @param channel
-     * @return
-     */
-    @Override
-    public boolean removeClient(Channel channel) {
-        return true;
     }
 
     /**

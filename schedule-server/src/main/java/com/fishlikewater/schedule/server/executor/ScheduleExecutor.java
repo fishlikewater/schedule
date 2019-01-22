@@ -58,8 +58,7 @@ public class ScheduleExecutor implements Executor {
     @Override
     public void beginJob(ServerContext serverContext) {
         if (stat.get() == 0) {
-            List<TaskDetail> taskList = serverContext.getTaskList();
-            init(taskList);
+            init(serverContext.getTaskList());
             log.info("actuator starts execution...");
             thread = new Thread() {
                 @Override
@@ -67,7 +66,8 @@ public class ScheduleExecutor implements Executor {
                     while (true) {
                         try {
                             long curTimeMillis = System.currentTimeMillis();
-                            taskList.stream()
+                            serverContext
+                                    .getTaskList().stream()
                                     .sorted()
                                     .limit(50)
                                     .filter(t -> t.isUse() && t.getNextTime() <= curTimeMillis)
@@ -93,7 +93,7 @@ public class ScheduleExecutor implements Executor {
                                         t.setNextTime(next);
                                     });
                             /** 优化线程睡眠机制，若长时间无任务，避免频繁循环刷新*/
-                            Optional<TaskDetail> first = taskList.stream().sorted().findFirst();
+                            Optional<TaskDetail> first = serverContext.getTaskList().stream().sorted().findFirst();
                             if(first.isPresent()){
                                 long timeMillis = System.currentTimeMillis();
                                 long nextTime = first.get().getNextTime();

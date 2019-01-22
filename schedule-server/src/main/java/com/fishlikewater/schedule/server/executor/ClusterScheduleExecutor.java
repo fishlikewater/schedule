@@ -36,7 +36,7 @@ public class ClusterScheduleExecutor implements Executor {
                 while (true){
                     try {
                         List<TaskDetail> taskDetail = serverContext.getTaskDetail();
-                        if(taskDetail != null){
+                        if(taskDetail != null && taskDetail.size()>0){
                             for (TaskDetail detail : taskDetail) {
                                 if(StringUtil.isNullOrEmpty(detail.getActionAdress())){
                                     /** 发送到一个随机实例执行*/
@@ -55,6 +55,7 @@ public class ClusterScheduleExecutor implements Executor {
                                 }
                             }
                         }
+                        serverContext.getTaskDetail();
                         Thread.sleep(1000l);
                     }catch (Exception e){
                        reStartThred(thread);

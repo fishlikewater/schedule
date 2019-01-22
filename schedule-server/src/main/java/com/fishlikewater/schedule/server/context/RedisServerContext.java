@@ -251,6 +251,13 @@ public class RedisServerContext implements ServerContext{
         return false;
     }
 
+    @Override
+    public TaskDetail getNextTask() {
+
+
+        return null;
+    }
+
     private RedisAsyncCommands<String, String> asyncCommands(){
         if(this.asyncCommands == null){
             this.asyncCommands = RedisConfig.getInstance().getRedisAsyncCommands();
