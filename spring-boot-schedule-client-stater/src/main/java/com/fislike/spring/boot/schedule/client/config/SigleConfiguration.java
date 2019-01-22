@@ -37,7 +37,7 @@ public class SigleConfiguration {
         }else{
             ScheduleJobContext.getInstance().setSleepTime(60*1000l);
         }
-        ScheduleExecutor.getInstance().beginJob();
+        ScheduleExecutor.getInstance().clientExcutor();
     }
 
 

@@ -12,11 +12,13 @@ import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 /**
  * @author zhangx
@@ -97,6 +99,60 @@ public class ScheduleExecutor {
     /**
      * 客户端队列执行器
      */
+    public void clientExcutor(){
+        List<TaskDetail> taskDetailList = ScheduleJobContext.getInstance().getCurrentJobList();
+        final Stream<TaskDetail> stream = taskDetailList.stream();
+        thread = new Thread() {
+            @Override
+            public void run() {
+                while (true){
+                    try {
+                        long curTimeMillis = System.currentTimeMillis();
+                        stream.filter(t -> t.isUse() && t.getNextTime() <= curTimeMillis)
+                                .forEach(t -> {
+                                    ScheduleExecutor.executor.submit(() -> {
+                                        t.getScheduleJob().run();
+                                    });
+                                    long next = t.getCronSequenceGenerator().next(System.currentTimeMillis());
+                                    t.setNextTime(next);
+                                });
+                        /** 优化线程睡眠机制，若长时间无任务，避免频繁循环刷新*/
+                        Optional<TaskDetail> first = stream.sorted().findFirst();
+                        if(first.isPresent()){
+                            long timeMillis = System.currentTimeMillis();
+                            long nextTime = first.get().getNextTime();
+                            if ((nextTime-timeMillis) >5*60*1000){ //长时间无job 保证5分钟刷一次
+                                Thread.sleep(5*60*1000l);
+                            }else if ((nextTime-timeMillis) > 1000 && (nextTime-timeMillis)<=5*60*1000){
+                                Thread.sleep(nextTime-timeMillis);
+                            }else {
+                                Thread.sleep(1000l);
+                            }
+                        }else {
+                            Thread.sleep(5*60*1000);//任务为空的时候线程5分钟刷一次
+                        }
+                    }catch (Exception e){
+                        if(thread.isAlive()){
+                            boolean interrupted = thread.isInterrupted();
+                            if(interrupted){
+                                thread.start();
+                            }
+                        }else {
+                            thread.start();
+                        }
+                    }
+                }
+            }
+        };
+        thread.setDaemon(true);
+        thread.start();
+        stat.set(1);
+    }
+
+    /**
+     * 客户端队列执行器
+     *//*
+    @Deprecated
     public void beginJob(){
         resetQueue();
         if(stat.get() == 0){
@@ -108,7 +164,7 @@ public class ScheduleExecutor {
                     while (true) {
                         try {
                             long curTimeMillis = System.currentTimeMillis();
-                            /** 从队列中取出任务 放到线程池中去 执行*/
+                            *//** 从队列中取出任务 放到线程池中去 执行*//*
                             TaskDetail taskDetail = TaskQueue.peek();
                             if (taskDetail != null) {
                                 if (curTimeMillis >= taskDetail.getNextTime()) {
@@ -116,7 +172,7 @@ public class ScheduleExecutor {
                                         log.info("begin task:{}", taskDetail.getDesc());
                                         taskDetail.getScheduleJob().run();
                                         log.info("end task:{}", taskDetail.getDesc());
-                                        /** 执行完成后 添加下次任务到队列*/
+                                        *//** 执行完成后 添加下次任务到队列*//*
                                         long cTimeMillis = System.currentTimeMillis();
                                         long next = taskDetail.getCronSequenceGenerator().next(cTimeMillis);
                                         taskDetail.setNextTime(next);
@@ -143,7 +199,7 @@ public class ScheduleExecutor {
             thread.start();
             stat.set(1);
         }
-    }
+    }*/
 
 
 }
