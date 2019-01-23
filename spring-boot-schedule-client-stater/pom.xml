@@ -6,7 +6,6 @@
         <groupId>com.github.fishlikewater</groupId>
         <artifactId>schedule</artifactId>
         <version>1.0.1.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <artifactId>spring-boot-schedule-client-stater</artifactId>
     <version>${schedule.boot.verison}</version>
