@@ -68,6 +68,7 @@ public class ScheduleExecutor implements Executor {
                             long curTimeMillis = System.currentTimeMillis();
                             serverContext
                                     .getTaskList().stream()
+                                    .parallel()
                                     .sorted()
                                     .limit(50)
                                     .filter(t -> t.isUse() && t.getNextTime() <= curTimeMillis)
@@ -93,7 +94,7 @@ public class ScheduleExecutor implements Executor {
                                         t.setNextTime(next);
                                     });
                             /** 优化线程睡眠机制，若长时间无任务，避免频繁循环刷新*/
-                            Optional<TaskDetail> first = serverContext.getTaskList().stream().sorted().findFirst();
+                            Optional<TaskDetail> first = serverContext.getTaskList().stream().parallel().sorted().findFirst();
                             if(first.isPresent()){
                                 long timeMillis = System.currentTimeMillis();
                                 long nextTime = first.get().getNextTime();
