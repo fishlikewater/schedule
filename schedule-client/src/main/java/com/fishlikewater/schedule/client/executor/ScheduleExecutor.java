@@ -7,7 +7,6 @@ import com.fishlikewater.schedule.common.entity.MessageProbuf;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import com.fishlikewater.schedule.common.kit.JsonFilter;
 import com.fishlikewater.schedule.common.kit.NamedThreadFactory;
-import com.fishlikewater.schedule.common.kit.TaskQueue;
 import io.netty.channel.Channel;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,7 +17,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 
 /**
  * @author zhangx
@@ -85,14 +83,12 @@ public class ScheduleExecutor {
      * 重置队列
      */
     public void resetQueue(){
-        TaskQueue.getQueue().clear();
         List<TaskDetail> taskDetailList = ScheduleJobContext.getInstance().getCurrentJobList();
         /** 任务添加到队列中*/
         long currentTimeMillis = System.currentTimeMillis();
         for (TaskDetail taskDetail : taskDetailList) {
             long next = taskDetail.getCronSequenceGenerator().next(currentTimeMillis);
             taskDetail.setNextTime(next);
-            TaskQueue.add(taskDetail);
         }
     }
 
@@ -100,15 +96,15 @@ public class ScheduleExecutor {
      * 客户端队列执行器
      */
     public void clientExcutor(){
+        resetQueue();
         List<TaskDetail> taskDetailList = ScheduleJobContext.getInstance().getCurrentJobList();
-        final Stream<TaskDetail> stream = taskDetailList.stream();
         thread = new Thread() {
             @Override
             public void run() {
                 while (true){
                     try {
                         long curTimeMillis = System.currentTimeMillis();
-                        stream.filter(t -> t.isUse() && t.getNextTime() <= curTimeMillis)
+                        taskDetailList.stream().filter(t -> t.isUse() && t.getNextTime() <= curTimeMillis)
                                 .forEach(t -> {
                                     ScheduleExecutor.executor.submit(() -> {
                                         t.getScheduleJob().run();
@@ -117,7 +113,7 @@ public class ScheduleExecutor {
                                     t.setNextTime(next);
                                 });
                         /** 优化线程睡眠机制，若长时间无任务，避免频繁循环刷新*/
-                        Optional<TaskDetail> first = stream.sorted().findFirst();
+                        Optional<TaskDetail> first = taskDetailList.stream().sorted().findFirst();
                         if(first.isPresent()){
                             long timeMillis = System.currentTimeMillis();
                             long nextTime = first.get().getNextTime();
