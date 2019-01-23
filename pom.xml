@@ -7,7 +7,7 @@
     <groupId>com.github.fishlikewater</groupId>
     <artifactId>schedule</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0.RELEASE</version>
+    <version>1.0.1.RELEASE</version>
     <modules>
         <module>schedule-server</module>
         <module>schedule-client</module>
@@ -49,8 +49,8 @@
         <slf4j-api-version>1.7.25</slf4j-api-version>
         <protobuf.version>3.6.1</protobuf.version>
         <slf4j-log4j12-version>1.7.25</slf4j-log4j12-version>
-        <schedule.verison>1.0.0.RELEASE</schedule.verison>
-        <schedule.boot.verison>0.0.1.RELEASE</schedule.boot.verison>
+        <schedule.verison>1.0.1.RELEASE</schedule.verison>
+        <schedule.boot.verison>0.0.2.RELEASE</schedule.boot.verison>
     </properties>
 
     <dependencies>
