@@ -5,6 +5,7 @@ import com.fishlikewater.schedule.server.boot.ServerStart;
 import com.fishlikewater.schedule.server.context.ServerContext;
 import com.fishlikewater.schedule.server.manage.record.RecordManage;
 import com.github.fishlikewater.spring.boot.schedule.server.console.controller.body.ActionBody;
+import com.github.fishlikewater.spring.boot.schedule.server.console.controller.body.CornBody;
 import com.github.fishlikewater.spring.boot.schedule.server.console.controller.body.ScheduleStatusBody;
 import com.github.fishlikewater.spring.boot.schedule.server.console.kit.BaseRest;
 import com.github.fishlikewater.spring.boot.schedule.server.console.kit.ResponseEntity;
@@ -125,6 +126,21 @@ public class ScheduleController extends BaseRest {
             returnList.add(map);
         }
         return sendSuccess(returnList);
+    }
+
+    /**
+     * 修改corn
+     * @return
+     */
+    @PostMapping("/corn")
+    public ResponseEntity updateCorn(@Validated @RequestBody CornBody cornBody){
+        ServerContext serverContext = ServerStart.build().getServerContext();
+        boolean isSuccess = serverContext.updateActionAddress(cornBody.getAppName(), cornBody.getNum(), cornBody.getCorn());
+        if(isSuccess){
+            return sendSuccess("执行成功");
+        }else {
+            return sendSuccess("执行失败");
+        }
     }
 
 }

@@ -33,6 +33,8 @@ public interface ServerContext {
 
     boolean updateActionAddress(String appName, int num, String actionAddress); //更新任务执行客户端
 
+    boolean updateCorn(String appName, int num, String corn);//更新任务corn
+
     boolean isSync(); //是否已同步数据
 
     //注册客户端（redis）

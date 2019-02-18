@@ -149,6 +149,26 @@ public class DefaultServerContext implements ServerContext{
         return false;
     }
 
+    /**
+     * 更新corn
+     * @param appName
+     * @param num
+     * @param corn
+     * @return
+     */
+    @Override
+    public boolean updateCorn(String appName, int num, String corn) {
+        List<TaskDetail> taskDetails = map.get(appName);
+        for (TaskDetail taskDetail : taskDetails) {
+            if(taskDetail.getSerialNumber() == num){
+                taskDetail.setCorn(corn);
+                Sql2oConfig.updateTask(taskDetail);
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean isSync() {
         return isSync;
