@@ -98,6 +98,7 @@ public class ScheduleExecutor {
     public void clientExcutor(){
         resetQueue();
         List<TaskDetail> taskDetailList = ScheduleJobContext.getInstance().getCurrentJobList();
+        /** 单线程寻找待执行job*/
         thread = new Thread() {
             @Override
             public void run() {
@@ -117,7 +118,7 @@ public class ScheduleExecutor {
                                     t.setNextTime(next);
                                 });
                         /** 优化线程睡眠机制，若长时间无任务，避免频繁循环刷新*/
-                        Optional<TaskDetail> first = taskDetailList.stream().sorted().findFirst();
+                        Optional<TaskDetail> first = taskDetailList.parallelStream().sorted().findFirst();
                         if(first.isPresent()){
                             long timeMillis = System.currentTimeMillis();
                             long nextTime = first.get().getNextTime();
