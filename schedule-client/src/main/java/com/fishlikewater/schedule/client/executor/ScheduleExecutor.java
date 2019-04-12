@@ -104,10 +104,14 @@ public class ScheduleExecutor {
                 while (true){
                     try {
                         long curTimeMillis = System.currentTimeMillis();
-                        taskDetailList.stream().filter(t -> t.isUse() && t.getNextTime() <= curTimeMillis)
+                        taskDetailList.stream().parallel().filter(t -> t.isUse() && t.getNextTime() <= curTimeMillis)
                                 .forEach(t -> {
                                     ScheduleExecutor.executor.submit(() -> {
-                                        t.getScheduleJob().run();
+                                        try {
+                                            t.getScheduleJob().run();
+                                        }catch (Exception e){
+                                            log.warn("excutor job 【{}】 fail", t.getDesc());
+                                        }
                                     });
                                     long next = t.getCronSequenceGenerator().next(System.currentTimeMillis());
                                     t.setNextTime(next);
