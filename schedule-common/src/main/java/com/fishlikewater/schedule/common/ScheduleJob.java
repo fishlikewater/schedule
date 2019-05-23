@@ -1,5 +1,7 @@
 package com.fishlikewater.schedule.common;
 
+import java.util.Map;
+
 /**
  * @author zhangx
  * @version V1.0
@@ -10,5 +12,5 @@ package com.fishlikewater.schedule.common;
  **/
 public interface ScheduleJob {
 
-    void run();
+    void run(Map map);
 }

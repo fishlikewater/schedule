@@ -73,6 +73,7 @@ public class ScannerScheduleKit {
                         .setCorn(value)
                         .setCronSequenceGenerator(new CronSequenceGenerator(value))
                         .setDesc(desc)
+                        .setClassName(aClass.getSimpleName())
                         .setScheduleJob(scheduleJob));
             } catch (InstantiationException e) {
                 log.error("get ScheduleJob entity error", e);

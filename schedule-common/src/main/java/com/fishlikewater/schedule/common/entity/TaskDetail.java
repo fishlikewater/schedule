@@ -6,6 +6,8 @@ import com.fishlikewater.schedule.common.kit.CronSequenceGenerator;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.util.Map;
+
 /**
  * @author zhangx
  * @version V1.0
@@ -22,7 +24,6 @@ public class TaskDetail implements Comparable<TaskDetail>{
 
     private String corn;
 
-    //@JSONField(serialize=false)
     private long nextTime;
 
     private String appName;
@@ -44,6 +45,15 @@ public class TaskDetail implements Comparable<TaskDetail>{
     //@JSONField(serialize=false)
     private boolean isUse = true;//是否使用
 
+    /** 参数传递 暂时只用于单机版**/
+    @JSONField(serialize=false)
+    private Map<String, Object> paramMap;
+    /** 动态编号 暂时只用于单机版**/
+    @JSONField(serialize=false)
+    private String taskNo;
+    /** 执行类名 暂时只用于单机版**/
+    @JSONField(serialize=false)
+    private String className;
     @Override
     public int compareTo(TaskDetail o) {
         return (int) (this.getNextTime()-o.getNextTime());

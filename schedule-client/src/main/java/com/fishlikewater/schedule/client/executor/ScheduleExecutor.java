@@ -54,7 +54,7 @@ public class ScheduleExecutor {
             try {
                 ScheduleJob scheduleJob = taskDetail.getScheduleJob();
                 taskDetail.setExecutorTime(System.currentTimeMillis());
-                scheduleJob.run();
+                scheduleJob.run(null);
                 /** 通知执行完成*/
                 taskDetail.setExecutorResult(true);
                 MessageProbuf.Message message = MessageProbuf.Message.newBuilder()
@@ -80,9 +80,9 @@ public class ScheduleExecutor {
 
 
     /**
-     * 重置队列
+     * 设置执行时间
      */
-    public void resetQueue(){
+    public void setCorn(){
         List<TaskDetail> taskDetailList = ScheduleJobContext.getInstance().getCurrentJobList();
         /** 任务添加到队列中*/
         long currentTimeMillis = System.currentTimeMillis();
@@ -96,20 +96,21 @@ public class ScheduleExecutor {
      * 客户端队列执行器
      */
     public void clientExcutor(){
-        resetQueue();
-        List<TaskDetail> taskDetailList = ScheduleJobContext.getInstance().getCurrentJobList();
+        setCorn();
         /** 单线程寻找待执行job*/
         thread = new Thread() {
             @Override
             public void run() {
+                List<TaskDetail> taskDetailList = null;
                 while (true){
                     try {
+                        taskDetailList = ScheduleJobContext.getInstance().getCurrentJobList();
                         long curTimeMillis = System.currentTimeMillis();
                         taskDetailList.stream().parallel().filter(t -> t.isUse() && t.getNextTime() <= curTimeMillis)
                                 .forEach(t -> {
                                     ScheduleExecutor.executor.submit(() -> {
                                         try {
-                                            t.getScheduleJob().run();
+                                            t.getScheduleJob().run(t.getParamMap());
                                         }catch (Exception e){
                                             log.warn("excutor job 【{}】 fail", t.getDesc());
                                         }

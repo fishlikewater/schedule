@@ -1,6 +1,7 @@
 package com.fishlikewater.schedule.client.kit;
 
 import com.fishlikewater.schedule.common.entity.TaskDetail;
+import com.fishlikewater.schedule.common.kit.CronSequenceGenerator;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -48,14 +49,53 @@ public class ScheduleJobContext {
     private long healthBeat = 60l;
     @Setter
     @Getter
-    private long sleepTime = 1000l;
-    @Setter
-    @Getter
     private long retryInterval = 60l;
     @Setter
     @Getter
     private String address;//e.g 127.0.0.1:8080,127.0.0.1:8081
 
+
+    /**
+     *  动态添加任务
+     * @param taskDetail 添加任务详情
+     */
+    public boolean addJob(TaskDetail taskDetail){
+        boolean hasClass = false;
+        for (TaskDetail detail : allJobList) {
+            if(detail.getClassName().equals(taskDetail.getClassName())){
+                hasClass = true;
+                taskDetail.setScheduleJob(detail.getScheduleJob());
+                break;
+            }
+        }
+        if(!hasClass){
+            return false;
+        }
+
+        allJobList.add(taskDetail);
+        taskDetail.setCronSequenceGenerator(new CronSequenceGenerator(taskDetail.getCorn()));
+        long currentTimeMillis = System.currentTimeMillis();
+        long next = taskDetail.getCronSequenceGenerator().next(currentTimeMillis);
+        taskDetail.setNextTime(next);
+        jobList.add(taskDetail);
+        return true;
+    }
+    /**
+     *  动态删除任务
+     * @param num 任务编号
+     */
+    public void delJob(int num){
+        jobList.removeIf(t->{return t.getSerialNumber() == num;});
+        allJobList.removeIf(t->{return t.getSerialNumber() == num;});
+    }
+    /**
+     *  动态删除任务
+     * @param taskNo 任务编号
+     */
+    public void delJob(String taskNo){
+        jobList.removeIf(t->{return t.getTaskNo().equals(taskNo);});
+        allJobList.removeIf(t->{return t.getTaskNo().equals(taskNo);});
+    }
     /**
      * 获取扫描到的所有 实例
      * @return

@@ -2,7 +2,6 @@ package com.fislike.spring.boot.schedule.client.config;
 
 import com.fishlikewater.schedule.client.boot.ClientStart;
 import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
-import com.fislike.spring.boot.schedule.client.enums.MatchUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,11 +43,6 @@ public class ClusterConfiguration {
         if(scheduleClientProperties.getServerPort() != 0) scheduleJobContext.setPORT(scheduleClientProperties.getServerPort());
         if(scheduleClientProperties.getServerHost() != null) scheduleJobContext.setHOST(scheduleClientProperties.getServerHost());
         if(scheduleClientProperties.getServerAddress() != null) scheduleJobContext.setAddress(scheduleClientProperties.getServerAddress());
-        if(scheduleClientProperties.getMatchUnit() == MatchUnit.SECOND){
-            scheduleJobContext.setSleepTime(1000l);
-        }else{
-            scheduleJobContext.setSleepTime(60*1000l);
-        }
         scheduleJobContext.setHealthBeat(scheduleClientProperties.getHealthBeat());
         scheduleJobContext.setRetryInterval(scheduleClientProperties.getRetryInterval());
         ClientStart.build().run();

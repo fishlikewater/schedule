@@ -1,6 +1,5 @@
 package com.fislike.spring.boot.schedule.client.config;
 
-import com.fislike.spring.boot.schedule.client.enums.MatchUnit;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -23,8 +22,6 @@ public class ScheduleClientProperties {
 
     /** scaner basePackage muilt package use ',' split */
     private String basePackage;
-
-    private MatchUnit matchUnit = MatchUnit.SECOND;
 
     /** time between heartbeat packets to the server*/
     private long healthBeat = 60l;
@@ -56,15 +53,6 @@ public class ScheduleClientProperties {
 
     public ScheduleClientProperties setBasePackage(String basePackage) {
         this.basePackage = basePackage;
-        return this;
-    }
-
-    public MatchUnit getMatchUnit() {
-        return matchUnit;
-    }
-
-    public ScheduleClientProperties setMatchUnit(MatchUnit matchUnit) {
-        this.matchUnit = matchUnit;
         return this;
     }
 

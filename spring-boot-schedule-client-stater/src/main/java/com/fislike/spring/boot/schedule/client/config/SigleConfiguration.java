@@ -3,7 +3,6 @@ package com.fislike.spring.boot.schedule.client.config;
 import com.fishlikewater.schedule.client.executor.ScheduleExecutor;
 import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
-import com.fislike.spring.boot.schedule.client.enums.MatchUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -32,11 +31,6 @@ public class SigleConfiguration {
         ScheduleJobContext.getInstance().setBasePath(scheduleClientProperties.getBasePackage());
         List<TaskDetail> allJobList = ScheduleJobContext.getInstance().getAllJobList();
         ScheduleJobContext.getInstance().updateCurrentJobList(allJobList);
-        if(scheduleClientProperties.getMatchUnit() == MatchUnit.SECOND){
-            ScheduleJobContext.getInstance().setSleepTime(1000l);
-        }else{
-            ScheduleJobContext.getInstance().setSleepTime(60*1000l);
-        }
         ScheduleExecutor.getInstance().clientExcutor();
     }
 
