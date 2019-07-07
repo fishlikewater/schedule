@@ -2,11 +2,11 @@ package com.fishlikewater.spring.boot.schedule.server.config;
 
 import com.fishlikewater.schedule.server.boot.ServerStart;
 import com.fishlikewater.schedule.server.manage.sqlite.Sql2oConfig;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
 
 /**
  * @author zhangx
@@ -16,9 +16,9 @@ import org.springframework.context.event.EventListener;
  * @Description
  * @date 2018年12月28日 14:27
  **/
-@Configuration
+@Component
 @EnableConfigurationProperties(ScheduleServerProperties.class)
-public class ScheduleServerConfiguration {
+public class ScheduleServerConfiguration implements InitializingBean, DisposableBean {
 
     @Autowired
     private ScheduleServerProperties scheduleServerProperties;
@@ -31,8 +31,18 @@ public class ScheduleServerConfiguration {
     }
 */
 
-    @EventListener
+/*    @EventListener
     public void deployScheduleClient(ApplicationReadyEvent event){
+
+    }*/
+
+    @Override
+    public void destroy() throws Exception {
+        ServerStart.build().getExecutor().toStop();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
         Sql2oConfig.open("jdbc:sqlite:schedule-server.db", null, null);
         ServerStart.build().run(scheduleServerProperties.getServerPort(), scheduleServerProperties.getServerAddress());
     }

@@ -16,7 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author zhangx
@@ -29,9 +28,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class ScheduleExecutor {
 
-    private AtomicInteger stat = new AtomicInteger(0);
+    //private AtomicInteger stat = new AtomicInteger(0);
 
-    private Thread thread;
+    private Thread scheduleThread;
+
+    private volatile boolean scheduleThreadToStop = false;
 
     public static ScheduleExecutor getInstance(){
         return ScheduleExecutorBuild.scheduleExecutor;
@@ -98,11 +99,11 @@ public class ScheduleExecutor {
     public void clientExcutor(){
         setCorn();
         /** 单线程寻找待执行job*/
-        thread = new Thread() {
+        scheduleThread = new Thread() {
             @Override
             public void run() {
                 List<TaskDetail> taskDetailList = null;
-                while (true){
+                while (!scheduleThreadToStop){
                     try {
                         taskDetailList = ScheduleJobContext.getInstance().getCurrentJobList();
                         long curTimeMillis = System.currentTimeMillis();
@@ -134,21 +135,36 @@ public class ScheduleExecutor {
                             Thread.sleep(5*60*1000);//任务为空的时候线程5分钟刷一次
                         }
                     }catch (Exception e){
-                        if(thread.isAlive()){
-                            boolean interrupted = thread.isInterrupted();
-                            if(interrupted){
-                                thread.start();
-                            }
-                        }else {
-                            thread.start();
+                        if (!scheduleThreadToStop) {
+                            log.error(e.getMessage(), e);
                         }
                     }
                 }
             }
         };
-        thread.setDaemon(true);
-        thread.start();
-        stat.set(1);
+        scheduleThread.setDaemon(true);
+        scheduleThread.start();
+    }
+
+    public void toStop(){
+        log.info("停止任务轮询线程");
+        scheduleThreadToStop = true;
+        try {
+            TimeUnit.SECONDS.sleep(1);  // wait
+        } catch (InterruptedException e) {
+            log.error(e.getMessage(), e);
+        }
+        if (scheduleThread.getState() != Thread.State.TERMINATED){
+            // interrupt and wait
+            scheduleThread.interrupt();
+            try {
+                scheduleThread.join();
+            } catch (InterruptedException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+        log.info("停止任务执行线程池");
+        executor.shutdown();
     }
 
     /**

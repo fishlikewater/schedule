@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -29,7 +30,9 @@ public class ScheduleExecutor implements Executor {
 
     private AtomicInteger stat = new AtomicInteger(0);
 
-    private Thread thread;
+    private Thread scheduleThread;
+
+    private volatile boolean scheduleThreadToStop = false;
 
    /* public static ScheduleExecutor getInstance() {
         return ScheduleExecutorBuild.scheduleExecutor;
@@ -60,10 +63,10 @@ public class ScheduleExecutor implements Executor {
         if (stat.get() == 0) {
             init(serverContext.getTaskList());
             log.info("actuator starts execution...");
-            thread = new Thread() {
+            scheduleThread = new Thread() {
                 @Override
                 public void run() {
-                    while (true) {
+                    while (!scheduleThreadToStop) {
                         try {
                             long curTimeMillis = System.currentTimeMillis();
                             serverContext
@@ -109,14 +112,35 @@ public class ScheduleExecutor implements Executor {
                                 Thread.sleep(5*60*1000);//任务为空的时候线程5分钟刷一次
                             }
                         } catch (Exception e) {
-                            reStartThred(thread);
+                            if (!scheduleThreadToStop) {
+                                log.error(e.getMessage(), e);
+                            }
                         }
                     }
                 }
             };
-            thread.setDaemon(true);
-            thread.start();
+            scheduleThread.setDaemon(true);
+            scheduleThread.start();
             stat.set(1);
+        }
+    }
+
+    @Override
+    public void toStop(){
+        scheduleThreadToStop = true;
+        try {
+            TimeUnit.SECONDS.sleep(1);  // wait
+        } catch (InterruptedException e) {
+            log.error(e.getMessage(), e);
+        }
+        if (scheduleThread.getState() != Thread.State.TERMINATED){
+            // interrupt and wait
+            scheduleThread.interrupt();
+            try {
+                scheduleThread.join();
+            } catch (InterruptedException e) {
+                log.error(e.getMessage(), e);
+            }
         }
     }
 

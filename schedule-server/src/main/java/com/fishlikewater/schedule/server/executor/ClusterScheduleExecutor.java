@@ -10,8 +10,10 @@ import com.fishlikewater.schedule.server.manage.redis.RedisConfig;
 import com.lambdaworks.redis.api.async.RedisAsyncCommands;
 import io.netty.channel.Channel;
 import io.netty.util.internal.StringUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -22,18 +24,21 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @Description
  * @date 2019年01月02日 17:29
  **/
+@Slf4j
 public class ClusterScheduleExecutor implements Executor {
 
     private AtomicInteger stat = new AtomicInteger(0);
 
-    private Thread thread;
+    private Thread scheduleThread;
+
+    private volatile boolean scheduleThreadToStop = false;
 
     @Override
     public void beginJob(ServerContext serverContext) {
         if (stat.get() == 0) {
             RedisAsyncCommands commands = RedisConfig.getInstance().getRedisAsyncCommands();
-            thread = new Thread(()->{
-                while (true){
+            scheduleThread = new Thread(()->{
+                while (!scheduleThreadToStop){
                     try {
                         List<TaskDetail> taskDetail = serverContext.getTaskDetail();
                         if(taskDetail != null && taskDetail.size()>0){
@@ -58,13 +63,34 @@ public class ClusterScheduleExecutor implements Executor {
                         serverContext.getTaskDetail();
                         Thread.sleep(1000l);
                     }catch (Exception e){
-                       reStartThred(thread);
+                        if (!scheduleThreadToStop) {
+                            log.error(e.getMessage(), e);
+                        }
                     }
                 }
             });
-            thread.setDaemon(true);
-            thread.start();
+            scheduleThread.setDaemon(true);
+            scheduleThread.start();
             stat.set(1);
+        }
+    }
+
+    @Override
+    public void toStop() {
+        scheduleThreadToStop = true;
+        try {
+            TimeUnit.SECONDS.sleep(1);  // wait
+        } catch (InterruptedException e) {
+            log.error(e.getMessage(), e);
+        }
+        if (scheduleThread.getState() != Thread.State.TERMINATED){
+            // interrupt and wait
+            scheduleThread.interrupt();
+            try {
+                scheduleThread.join();
+            } catch (InterruptedException e) {
+                log.error(e.getMessage(), e);
+            }
         }
     }
 }

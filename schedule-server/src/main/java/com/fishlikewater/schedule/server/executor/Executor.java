@@ -28,4 +28,6 @@ public interface Executor {
             thread.start();
         }
     }
+
+    void toStop();
 }
