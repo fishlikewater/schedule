@@ -3,7 +3,7 @@ package com.fishlikewater.schedule.client.handler;
 import com.alibaba.fastjson.JSON;
 import com.fishlikewater.schedule.client.boot.ClientStart;
 import com.fishlikewater.schedule.client.executor.ScheduleExecutor;
-import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
+import com.fishlikewater.schedule.common.context.ScheduleJobContext;
 import com.fishlikewater.schedule.common.entity.MessageProbuf;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import io.netty.channel.ChannelHandlerContext;

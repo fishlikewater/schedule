@@ -1,7 +1,7 @@
 package com.fishlikewater.schedule.client.executor;
 
 import com.alibaba.fastjson.JSON;
-import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
+import com.fishlikewater.schedule.common.context.ScheduleJobContext;
 import com.fishlikewater.schedule.common.ScheduleJob;
 import com.fishlikewater.schedule.common.entity.MessageProbuf;
 import com.fishlikewater.schedule.common.entity.TaskDetail;

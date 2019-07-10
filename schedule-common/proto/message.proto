@@ -17,4 +17,5 @@ enum MessageType{
    EXCUTOR = 4;
    RESULT = 5;
    INIT = 6;
+   REFRESH = 7;
 }

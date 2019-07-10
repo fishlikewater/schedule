@@ -1,4 +1,4 @@
-package com.fishlikewater.schedule.client.annotion;
+package com.fishlikewater.schedule.common.annotion;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;

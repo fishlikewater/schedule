@@ -38,6 +38,7 @@ public class ScheduleServerConfiguration implements InitializingBean, Disposable
 
     @Override
     public void destroy() throws Exception {
+        ServerStart.build().stop();
         ServerStart.build().getExecutor().toStop();
     }
 

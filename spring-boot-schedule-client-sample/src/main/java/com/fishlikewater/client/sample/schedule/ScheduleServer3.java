@@ -1,6 +1,6 @@
 package com.fishlikewater.client.sample.schedule;
 
-import com.fishlikewater.schedule.client.annotion.Schedule;
+import com.fishlikewater.schedule.common.annotion.Schedule;
 import com.fishlikewater.schedule.common.ScheduleJob;
 
 import java.util.Map;

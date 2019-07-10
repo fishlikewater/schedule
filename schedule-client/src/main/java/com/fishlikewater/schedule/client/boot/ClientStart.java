@@ -3,7 +3,7 @@ package com.fishlikewater.schedule.client.boot;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.fishlikewater.schedule.client.handler.ClientHandlerInitializer;
-import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
+import com.fishlikewater.schedule.common.context.ScheduleJobContext;
 import com.fishlikewater.schedule.common.entity.MessageProbuf;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import com.fishlikewater.schedule.common.kit.NamedThreadFactory;
@@ -133,7 +133,7 @@ public class ClientStart {
             this.channel = future.channel();
             log.info("start scheduleClient this port:{} and adress:{}", PORT, HOST);
             afterConnectionSuccessful(channel);
-            future.channel().closeFuture().sync();
+            //future.channel().closeFuture().sync();
         } catch (Exception e) {
             log.error("start scheduleClient server fail");
         }

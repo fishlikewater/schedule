@@ -1,14 +1,14 @@
 package com.fislike.spring.boot.schedule.client.config;
 
 import com.fishlikewater.schedule.client.boot.ClientStart;
-import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
+import com.fishlikewater.schedule.common.context.ScheduleJobContext;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
 
 /**
  * @author zhangx
@@ -21,15 +21,15 @@ import org.springframework.context.event.EventListener;
 @Configuration
 @EnableConfigurationProperties(ScheduleClientProperties.class)
 @Slf4j
-public class ClusterConfiguration {
+public class ClusterConfiguration implements InitializingBean, DisposableBean {
     @Autowired
     private ScheduleClientProperties scheduleClientProperties;
 
     @Value("${spring.application.name}")
     private String appName;
 
-    @EventListener
-    public void deployScheduleClient(ApplicationReadyEvent event){
+    @Override
+    public void afterPropertiesSet() throws Exception {
         ScheduleJobContext scheduleJobContext = ScheduleJobContext.getInstance();
         if (appName == null){
             log.warn("not config application name, this cluster schedule not running");
@@ -46,5 +46,11 @@ public class ClusterConfiguration {
         scheduleJobContext.setHealthBeat(scheduleClientProperties.getHealthBeat());
         scheduleJobContext.setRetryInterval(scheduleClientProperties.getRetryInterval());
         ClientStart.build().run();
+    }
+
+    @Override
+    public void destroy() throws Exception {
+        log.info("dstory evenloop thred of netty");
+        ClientStart.build().stop();
     }
 }

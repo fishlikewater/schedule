@@ -1,6 +1,6 @@
 package com.fishlikewater.client.sample.rest;
 
-import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
+import com.fishlikewater.schedule.common.context.ScheduleJobContext;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

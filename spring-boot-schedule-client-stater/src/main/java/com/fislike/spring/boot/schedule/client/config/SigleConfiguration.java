@@ -1,7 +1,7 @@
 package com.fislike.spring.boot.schedule.client.config;
 
 import com.fishlikewater.schedule.client.executor.ScheduleExecutor;
-import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
+import com.fishlikewater.schedule.common.context.ScheduleJobContext;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;

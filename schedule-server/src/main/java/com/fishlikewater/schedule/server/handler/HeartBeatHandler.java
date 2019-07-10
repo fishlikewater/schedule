@@ -1,8 +1,9 @@
-package com.fishlikewater.schedule.client.handler;
+package com.fishlikewater.schedule.server.handler;
 
-import com.fishlikewater.schedule.client.boot.ConnectionListener;
 import com.fishlikewater.schedule.common.context.ScheduleJobContext;
 import com.fishlikewater.schedule.common.entity.MessageProbuf;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -29,7 +30,14 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;        // 强制类型转换
             ctx.channel().writeAndFlush(HEARTBEAT_SEQUENCE)
-                    .addListener(new ConnectionListener());//(ChannelFutureListener.CLOSE_ON_FAILURE);
+                    .addListener(new ChannelFutureListener(){
+                        @Override
+                        public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                            if(!channelFuture.isSuccess()){
+                                ctx.channel().close();
+                            }
+                        }
+                    });//(ChannelFutureListener.CLOSE_ON_FAILURE);
            /* if (event.state() == IdleState.READER_IDLE) {
                 System.out.println("进入读空闲...");
             } else if (event.state() == IdleState.WRITER_IDLE) {

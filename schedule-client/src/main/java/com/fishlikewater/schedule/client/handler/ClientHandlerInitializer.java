@@ -1,6 +1,6 @@
 package com.fishlikewater.schedule.client.handler;
 
-import com.fishlikewater.schedule.client.kit.ScheduleJobContext;
+import com.fishlikewater.schedule.common.context.ScheduleJobContext;
 import com.fishlikewater.schedule.common.entity.MessageProbuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;

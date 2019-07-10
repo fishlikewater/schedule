@@ -89,11 +89,11 @@ public class ServerStart {
         try {
             Channel ch = bootstrap.bind(adress, port).sync().channel();
             log.info("start ScheduleServer this port:{} and adress:{}", port, adress);
-            ch.closeFuture().sync();
+            ch.closeFuture();
         } catch (InterruptedException e) {
             log.error("start ScheduleServer server fail", e);
         }finally {
-            stop();
+            //stop();
         }
     }
 
@@ -101,7 +101,7 @@ public class ServerStart {
      * 关闭服务
      */
     public void stop() {
-        log.info("⬢ scheduleClient shutdown ...");
+        log.info("⬢ ScheduleServer shutdown ...");
         try {
             if (this.bossGroup != null) {
                 this.bossGroup.shutdownGracefully().sync();
@@ -109,9 +109,9 @@ public class ServerStart {
             if (this.workerGroup != null) {
                 this.workerGroup.shutdownGracefully().sync();
             }
-            log.info("⬢ scheduleClient shutdown successful");
+            log.info("⬢ ScheduleServer shutdown successful");
         } catch (Exception e) {
-            log.error("scheduleClient shutdown error", e);
+            log.error("ScheduleServer shutdown error", e);
         }
     }
 

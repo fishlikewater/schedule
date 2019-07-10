@@ -1,6 +1,6 @@
 package com.fishlikewater;
 
-import com.fishlikewater.schedule.client.kit.ScannerScheduleKit;
+import com.fishlikewater.schedule.common.context.ScannerScheduleKit;
 import com.fishlikewater.schedule.common.entity.TaskDetail;
 import com.fishlikewater.schedule.common.kit.CronSequenceGenerator;
 import org.junit.Test;
